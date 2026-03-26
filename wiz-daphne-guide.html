@@ -115,6 +115,7 @@ footer{text-align:center;padding:18px;font-size:11px;color:var(--dim);border-top
   <button class="mtab" onclick="switchM('cyclops',this)" style="display:none"><span class="mtab-icon">👁️</span>サイクロプス周回</button>
   <button class="mtab" onclick="switchM('oni',this)"><span class="mtab-icon">👹</span>鬼啼島</button>
   <button class="mtab" onclick="switchM('bounty',this)" style="display:none"><span class="mtab-icon">📋</span>手配書</button>
+  <button class="mtab" onclick="switchM('henzo-practice',this)"><span class="mtab-icon">🔨</span>変造練習</button>
   <button class="mtab" onclick="switchM('kago',this)"><span class="mtab-icon">🔮</span>加護・変造ガイド</button>
 </div>
 
@@ -438,6 +439,102 @@ footer{text-align:center;padding:18px;font-size:11px;color:var(--dim);border-top
       style="padding:7px 14px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--muted);font-size:12px;cursor:pointer">クリア</button>
   </div>
   <div id="char-search-results" style="font-size:12px;color:var(--muted)">名前を入力してください</div>
+</div></div>
+
+
+<div id="cs-henzo-practice" class="csec"><div class="main">
+  <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:nowrap;margin-bottom:0">
+    <div class="stitle" style="margin-bottom:0;white-space:nowrap">🔨 変造練習シミュレーター</div>
+    <select id="hp-content-title" onchange="document.getElementById('hp-content').value=this.value;hpRefresh();" style="padding:3px 8px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:12px;flex-shrink:0">
+      <option value="guarda">🏰 グアルダ城塞</option>
+      <option value="greater">👿 グレーターデーモン</option>
+      <option value="isbell">❄️ イスベルク</option>
+    </select>
+  </div>
+  <p style="font-size:12px;color:var(--muted);margin-bottom:14px">変造の判断を練習できます。装備・職業を選ぶと現在の加護状況と変造アドバイスが表示されます。</p>
+
+  <!-- ①職業・ビルド選択 -->
+  <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px">
+    <span style="font-size:12px;color:var(--gold);font-weight:600">①職業</span>
+    <select id="hp-job" onchange="hpUpdate()" style="padding:5px 10px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:12px">
+      <option value="">-- 選択 --</option>
+      <option value="戦士">⚔️ 戦士</option>
+      <option value="騎士">🛡️ 騎士</option>
+      <option value="盗賊">🗝️ 盗賊</option>
+      <option value="僧侶">✨ 僧侶</option>
+      <option value="魔術師">📖 魔術師</option>
+      <option value="忍者">🌙 忍者</option>
+      <option value="侍">⚔️ 侍</option>
+      <option value="レンジャー">🏹 レンジャー</option>
+    </select>
+    <span style="font-size:12px;color:var(--gold);font-weight:600">ビルド</span>
+    <select id="hp-build" onchange="hpUpdate()" style="padding:5px 10px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:12px">
+      <option value="標準">標準</option>
+    </select>
+  </div>
+
+  <!-- ②前衛後衛選択 -->
+  <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px">
+    <span style="font-size:12px;color:var(--gold);font-weight:600">②配置</span>
+    <select id="hp-pos" onchange="hpRefresh()" style="padding:5px 10px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:12px">
+      <option value="前衛">⚔️ 前衛</option>
+      <option value="後衛">🏹 後衛</option>
+    </select>
+  </div>
+  <!-- hidden content input synced with title dropdown -->
+  <input type="hidden" id="hp-content" value="guarda">
+
+  <!-- ③部位選択 -->
+  <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px">
+    <span style="font-size:12px;color:var(--gold);font-weight:600">②部位</span>
+    <select id="hp-slot" onchange="hpOnSlotChange()" style="padding:5px 10px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:12px">
+      <option value="">-- 選択 --</option>
+      <option value="頭">⛑️ 頭</option>
+      <option value="体">🧥 体</option>
+      <option value="腕">🧤 腕</option>
+      <option value="盾">🛡️ 盾</option>
+      <option value="足">👢 足</option>
+      <option value="武器">⚔️ 武器</option>
+      <option value="装飾品">💍 装飾品</option>
+    </select>
+    <!-- 武器種選択 -->
+    <select id="hp-weapon-type" onchange="hpLoadEquips()" style="display:none;padding:5px 10px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:12px">
+      <option value="片手">⚔️ 片手剣/斧/鈍器</option>
+      <option value="両手">🗡️ 両手剣/大剣</option>
+      <option value="弓">🏹 弓</option>
+      <option value="杖">🪄 杖/ロッド</option>
+      <option value="忍者刀">🌙 忍者刀</option>
+      <option value="短剣">🔪 短剣/苦無</option>
+      <option value="刀">⚔️ 刀</option>
+      <option value="大太刀">⚔️ 大太刀</option>
+    </select>
+  </div>
+
+  <div id="hp-equip-info" style="display:none"></div>
+
+  <!-- ④青/紫選択 -->
+  <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px">
+    <span style="font-size:12px;color:var(--gold);font-weight:600">④レア度</span>
+    <div id="hp-rarity-tog" style="display:flex;gap:6px">
+      <button class="tbtn active" onclick="hpSetRarity('blue',this)" style="padding:5px 14px;border-radius:8px;border:2px solid var(--teal);color:var(--teal);background:var(--surface);font-size:12px;cursor:pointer">青装備</button>
+      <button class="tbtn" onclick="hpSetRarity('purple',this)" style="padding:5px 14px;border-radius:8px;border:1px solid var(--border);color:var(--muted);background:var(--surface);font-size:12px;cursor:pointer">紫装備</button>
+    </div>
+  </div>
+
+  <!-- ⑤加護スロット + 変造ボタン -->
+  <div id="hp-main-area" style="display:none">
+    <div style="font-size:12px;font-weight:600;color:var(--gold2);margin-bottom:8px">⑤加護スロット（変造したい枠をタップして選択 → 変造ボタン）</div>
+    <div id="hp-slots" style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px"></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button id="hp-senren-btn" onclick="hpSenren()" style="display:none;padding:8px 20px;border-radius:8px;background:var(--teal);color:#fff;border:none;font-size:13px;font-weight:600;cursor:pointer">✨ 精錬石を使用</button>
+      <button id="hp-henzo-btn" onclick="hpDoHenzo()" style="display:none;padding:8px 20px;border-radius:8px;background:var(--ember);color:#fff;border:none;font-size:13px;font-weight:600;cursor:pointer">🔨 変造する</button>
+      <button id="hp-skip-btn" onclick="hpSkipHenzo()" style="display:none;padding:8px 20px;border-radius:8px;background:var(--surface);color:var(--muted);border:1px solid var(--border);font-size:13px;cursor:pointer">変造しない</button>
+      <button id="hp-reroll-btn" onclick="hpReroll()" style="display:none;padding:8px 20px;border-radius:8px;background:var(--surface);color:var(--teal);border:1px solid var(--teal);font-size:13px;cursor:pointer">🔄 厳選しなおす</button>
+    </div>
+  </div>
+
+  <!-- ⑦アドバイス -->
+  <div id="hp-advice" style="display:none;margin-top:12px"></div>
 </div></div>
 
 <footer>ウィズダフネ 高難度攻略 装備リファレンス ／ 情報は攻略Wikiおよびコミュニティ情報を参照</footer>
@@ -1029,7 +1126,7 @@ function buildStatCalcPanel(charStats, eqTotal, slots, job, c, build){
       if(job==='魔術師') return '魔力 '+atkSlots+'枠';
       if(job==='僧侶')   return '神力 '+atkSlots+'枠';
       if(job==='レンジャー') return '命中 '+atkSlots+'枠';
-      if(job==='騎士' && build==='防御') return '防御/魔防 '+atkSlots+'枠';
+      if(isDefKnight) return '防御/魔防 '+atkSlots+'枠';
       if(job==='侍' && build==='会心') return '会心 '+atkSlots+'枠';
       return '攻撃力 '+atkSlots+'枠';
     })()} +${atkSlots*KAIGO_RANGE.atk[0]}〜+${atkSlots*KAIGO_PER_SLOT.atk}</span>
@@ -1125,7 +1222,7 @@ function draw(c){
   // ===== 装備スロット一覧 =====
   const tgtC = CONTENT_TARGETS[c];
   const isKnight = job === '騎士';
-  const isDefKnight = isKnight && build === '防御';
+  const isDefKnight = isKnight && build==='防御';
   const spdTargetC = isKnight ? (tgtC.spdKnight || tgtC.spd || 0) : (tgtC.spd || 0);
   const showHitC = tgtC.showHit && job !== '魔術師' && !(job === '僧侶' && pos === '後衛') && !(job === '騎士' && build === '回避');
   const showEvaC = tgtC.showEva && !isDefKnight;
@@ -2118,6 +2215,982 @@ function inlineCharSelect(btn){
     if(sel2){ sel2.value=charName; selChar(c,charName,null); }
   }, 150);
 }
+
+
+
+// ===== 変造練習シミュレーター =====
+const EQUIP_DB = {
+  "頭": {icon:"⛑️", equips:{
+    "冥鋼の軽兜": "冥鋼の軽兜（防御32・命中+18）",
+    "冥鋼の重兜": "冥鋼の重兜（防御?・重鎧）",
+    "別離の軽兜": "別離の軽兜（防御32・命中+18・悪魔抵抗）",
+    "銀の軽兜": "銀の軽兜",
+    "銀の重兜": "銀の重兜（防御39・重鎧）",
+    "雪凶鳥の羽冠": "雪凶鳥の羽冠（防御23・速度+10・回避+15・抵抗26）",
+  }},
+  "体": {icon:"🧥", equips:{
+    "エクソシズムガウン": "エクソシズムガウン（防御18→58・魔防26・悪魔抵抗）（布鎧・紫☆4）",
+    "エクソシズムプレート": "エクソシズムプレート（防御49→89・悪魔抵抗）",
+    "エクソシズムメイル": "エクソシズムメイル（防御33→73・魔防26・悪魔抵抗）（軽鎧・紫☆4）",
+    "ホーリーナイトプレート": "ホーリーナイトプレート（防御49→89・騎士専用・不死抵抗）",
+    "冥鋼の軽鎧": "冥鋼の軽鎧（防御?）",
+    "冥鋼の重鎧": "冥鋼の重鎧（防御52→92）",
+    "森精の軽鎧": "森精の軽鎧（防御15→53・回避+9）",
+    "銀の重鎧": "銀の重鎧（防御79→135・魔防36）",
+    "鎖帷子": "鎖帷子（防御?・会心+5固定（追加護なし））（会心+5固定）",
+  }},
+  "腕": {icon:"🧤", equips:{
+    "【軽小手】冥鋼の軽篭手": "【軽小手】冥鋼の軽篭手（R5・防御28・命中+18）",
+    "ハンティンググローブ": "ハンティンググローブ（R6・防御30・速度+3・命中+31・会心+2・魔獣抵抗）",
+    "ヴェイルグローブ": "ヴェイルグローブ（R5・防御26・命中+20）",
+    "冥鋼の軽篭手": "冥鋼の軽篭手（R5・防御28・命中+18）",
+    "別離の軽篭手": "別離の軽篭手（R5・防御28・命中+18・悪魔抵抗）",
+    "厚手の手袋": "厚手の手袋（R6・凍結耐性）",
+    "泰然の重篭手": "泰然の重篭手（行程10・防御補正100）",
+    "百花の軽篭手": "百花の軽篭手（R5・防御22・命中+18・回避+5・魔獣抵抗）",
+    "籠の腕巻き": "籠の腕巻き（R6・防御30・速度-1・命中+30・回避+6）",
+    "銀の軽篭手": "銀の軽篭手（R6）",
+    "鋼の軽篭手": "鋼の軽篭手（防御？繋ぎ）",
+    "隠密の腕巻き": "隠密の腕巻き（R5・防御24・速度+1・命中+22・回避+6）",
+    "黒翼の手袋": "黒翼の手袋（R6・防御32・速度+1・命中+28）",
+  }},
+  "盾": {icon:"🛡️", equips:{
+    "ホーリーナイトシールド": "ホーリーナイトシールド（防御25→43・魔防18・騎士専用・不死抵抗）",
+    "冥鋼の大盾": "冥鋼の大盾（防御26→44・回避-2）",
+    "冥鋼の盾": "冥鋼の盾（防御18→36・魔防18）",
+    "叙勲の盾": "叙勲の盾（抵抗+4付き）",
+    "悪魔の小盾": "悪魔の小盾（防御34・魔防20）",
+    "銀の大盾": "銀の大盾（防御38→65・回避-2）",
+    "銀の盾": "銀の盾（防御25・魔獣特攻）",
+    "鋼の盾": "鋼の盾",
+    "鍛鉄の盾": "鍛鉄の盾（抵抗+4）",
+    "風凪ぎのクレスト": "風凪ぎのクレスト（豪雪地帯産）",
+  }},
+  "足": {icon:"👢", equips:{
+    "【軽足鎧】銀の軽足鎧": "【軽足鎧】銀の軽足鎧（R6・防御39・回避+25）",
+    "ハンティングブーツ": "ハンティングブーツ（R6・防御30・速度+12・回避+29・会心+4・魔獣抵抗）",
+    "ブレイブシューズ": "ブレイブシューズ（R6・防御31・速度+2・回避+29・恐怖耐性）",
+    "ムートンブーツ": "ムートンブーツ（R6・防御30・速度+2・回避+28・凍結耐性）",
+    "ヴェイルブーツ": "ヴェイルブーツ（R5・防御26・速度+2・回避+20）",
+    "冥鋼の軽足鎧": "冥鋼の軽足鎧（R5・防御28・回避+18）",
+    "冥鋼の重足鎧": "冥鋼の重足鎧（防御?・重鎧）",
+    "深雪の草靴": "深雪の草靴（R6・体温上限上昇）",
+    "籠の忍足袋": "籠の忍足袋（R6・防御32・速度+3・回避+34・会心+4）",
+    "銀の重足鎧": "銀の重足鎧（防御?・重鎧）",
+    "鋼の重足鎧": "鋼の重足鎧（繋ぎ）",
+    "陽炎の軽足鎧": "陽炎の軽足鎧（R5・防御20・回避+22・混乱",
+    "魅了耐性）": "魅了耐性）",
+    "黒翼のブーツ": "黒翼のブーツ（R6・防御32・速度+2・回避+29）",
+  }},
+  "武器": {icon:"⚔️", equips:{
+    "アーケインエルムボウ": "アーケインエルムボウ（ATK94→184×1・命中+4）",
+    "アーケインスタッフ": "アーケインスタッフ（ATK33→123×1・魔力90→180）",
+    "アーケインロッド": "アーケインロッド（ATK22→87×1・魔力53→118）",
+    "アーケインロングボウ": "アーケインロングボウ（ATK?×1・命中）",
+    "エクラスタッフ": "エクラスタッフ（ATK40→139×1・魔力108→216）",
+    "エクラロッド": "エクラロッド（ATK27→105×1・魔力64→142・神力64→142）",
+    "エクラロングボウ": "エクラロングボウ（ATK113→212×1・命中+4）",
+    "デザートロッド": "デザートロッド（ATK?・魔力?）",
+    "ハンティングアクス": "ハンティングアクス（ATK79→199×1・魔獣特効）",
+    "ハンティングアロー": "ハンティングアロー（ATK90→180×1・魔獣特効）",
+    "ビーストキラー": "ビーストキラー（ATK51→123×2・魔獣特効）",
+    "ビーストクラッシャー": "ビーストクラッシャー（ATK132→231×1・魔獣特効・命中+6）",
+    "ビーストバスター": "ビーストバスター（ATK128→227×1・魔獣特効）",
+    "ビーストペネトレイター": "ビーストペネトレイター（ATK110→209×1・命中+10）",
+    "上々作の刀": "上々作の刀（ATK70→130×2）",
+    "上作の騎兵刀": "上作の騎兵刀（ATK60→132×2・命中+6）",
+    "冥鋼の両手槍": "冥鋼の両手槍（ATK95→185×1・命中+10）",
+    "冥鋼の剣": "冥鋼の剣（ATK53→113×2）",
+    "冥鋼の大剣": "冥鋼の大剣（ATK110→200×1）",
+    "冥鋼の片手斧": "冥鋼の片手斧（ATK83→148×1）",
+    "冥鋼の短剣": "冥鋼の短剣（ATK45→105×2）",
+    "冥鋼の鎚矛": "冥鋼の鎚矛（ATK47→107×1・神力53→118）",
+    "吉備津": "吉備津（ATK?×1・大太刀）",
+    "妖刀鬼ヶ島": "妖刀鬼ヶ島（ATK?×1・大太刀・鬼啼島報酬）",
+    "悪魔殺しの剣": "悪魔殺しの剣（ATK52→112×2・悪魔特効）",
+    "悪魔殺しの大剣": "悪魔殺しの大剣（ATK105→195×1・悪魔特効）",
+    "最上作の刀": "最上作の刀（ATK84→156×2）",
+    "獣狩り": "獣狩り（ATK82→154×2・魔獣特効）",
+    "神楽月": "神楽月（ATK92→164×2・命中+10・会心+9）",
+    "約束の剣": "約束の剣（ATK56→116×2・防御貫通・命中+20）",
+    "脱力の杖": "脱力の杖（ATK11→76×1・魔力51→116）",
+    "角鷲の剣": "角鷲の剣（ATK38→88×2・魔獣特効）",
+    "銀の両手槍": "銀の両手槍（ATK114→213×1・命中+10）",
+    "銀の刀": "銀の刀（ATK64×2）",
+    "銀の剣": "銀の剣（ATK64×2）",
+    "銀の大剣": "銀の大剣（ATK132→231×1・命中+15）",
+    "銀の大太刀": "銀の大太刀（ATK?×1・魔獣特效）",
+    "銀の片手斧": "銀の片手斧（ATK100×1）",
+    "銀の短剣": "銀の短剣（ATK54→126×2・命中+20）",
+    "銀の鎚矛": "銀の鎚矛（ATK?・神力?）",
+    "鋼の鎚矛": "鋼の鎚矛（ATK?・繋ぎ）",
+  }},
+  "右手短剣": {icon:"⚔️", equips:{
+    "ビーストキラー": "ビーストキラー（ATK51→123×2・魔獣特効）（魔獣特効・豪雪地帯の咆哮のガラクタ）",
+    "冥鋼の短剣": "冥鋼の短剣（ATK45→105×2）（城塞のガラクタ）",
+    "悪魔殺しの短剣": "悪魔殺しの短剣（悪魔特効）",
+    "銀の短剣": "銀の短剣（豪雪地帯）",
+  }},
+  "右手投擲": {icon:"⚔️", equips:{
+    "ビーストキラー苦無": "ビーストキラー苦無（魔獣特効）",
+    "冥鋼の苦無": "冥鋼の苦無（城塞ガラクタ）",
+    "悪魔殺しの苦無": "悪魔殺しの苦無（悪魔特効）",
+    "柑刺し": "柑刺し（ATK40→99×3・魅了付与・防御貫通）（ガチャS+・×3・魅了・防御貫通）",
+    "虚影の苦無": "虚影の苦無（港町期間限定依頼報酬・投擲忍具）",
+    "銀の苦無": "銀の苦無（豪雪地帯）",
+  }},
+  "左手短剣": {icon:"🗡️", equips:{
+    "ビーストキラー": "ビーストキラー（ATK51→123×2・魔獣特効）（魔獣特効）",
+    "冥鋼の短剣 or 悪魔殺しの短剣": "冥鋼の短剣 or 悪魔殺しの短剣（ATK45→105×2）（左手用）",
+    "悪魔殺しの短剣": "悪魔殺しの短剣（ATK43→103×2・悪魔特効）（左手用・悪魔特効）",
+    "銀の短剣": "銀の短剣（左手用）",
+  }},
+  "左手投擲": {icon:"🗡️", equips:{
+    "ビーストキラー苦無": "ビーストキラー苦無（魔獣特効）",
+    "冥鋼の苦無": "冥鋼の苦無（城塞ガラクタ）",
+    "悪魔殺しの苦無": "悪魔殺しの苦無（悪魔特効）",
+    "柑刺し": "柑刺し（ATK40→99×3・魅了付与・防御貫通）（ガチャS+・×3・魅了・防御貫通）",
+    "虚影の苦無": "虚影の苦無（港町期間限定依頼報酬・投擲忍具）",
+    "銀の苦無": "銀の苦無（豪雪地帯）",
+  }},
+  "忍者刀": {icon:"⚔️", equips:{
+    "冥鋼の忍者刀": "冥鋼の忍者刀（城塞ガラクタ）",
+    "虚影の刃": "虚影の刃（期間限定依頼報酬）",
+  }},
+  "装飾品": {icon:"💍", equips:{
+    "冥鋼の指輪": "冥鋼の指輪（防御32・魔防18）",
+    "坑夫の守り輪": "坑夫の守り輪（防御39・麻痺",
+    "夢断ち鋏": "夢断ち鋏（魔防35・抵抗+10・睡眠耐性）",
+    "戦姫の指輪": "戦姫の指輪（防御28・魔防12・回避+4・会心+5）",
+    "気絶耐性）": "気絶耐性）",
+    "鋼の指輪": "鋼の指輪",
+    "鍛鉄の盾": "鍛鉄の盾（抵抗+4）",
+  }},
+};
+
+(function(){
+
+const HP_KAIGO_NAMES = {
+  hit:'命中（実数）', eva:'回避（実数）', spd:'行動速度（実数）', crit:'会心（実数）',
+  atk:'攻撃力（実数）', mag:'魔力（実数）', div:'神力（実数）', def:'防御（実数）',
+  res:'抵抗（実数）', mdef:'魔法防御（実数）',
+  atk_pct:'攻撃力（%）', mag_pct:'魔力（%）', div_pct:'神力（%）', def_pct:'防御（%）',
+  hit_pct:'命中（%）', eva_pct:'回避（%）', spd_pct:'行動速度（%）',
+  res_pct:'抵抗（%）', mdef_pct:'魔法防御（%）'
+};
+// 武器種別の自然加護オーバーライド
+const HP_WEAPON_TYPE_NAT = {
+  '片手剣':  ['atk','hit','eva','crit','atk_pct','hit_pct','eva_pct'],
+  '片手斧':  ['atk','hit','eva','crit','atk_pct','hit_pct','eva_pct'],
+  '両手剣':  ['atk','hit','eva','crit','atk_pct','hit_pct','eva_pct'],
+  '両手斧':  ['atk','hit','eva','crit','atk_pct','hit_pct','eva_pct'],
+  '両手槍':  ['atk','hit','eva','crit','atk_pct','hit_pct','eva_pct'],
+  '弓':      ['atk','hit','eva','crit','spd','atk_pct','hit_pct','eva_pct','spd_pct'],
+  '片手杖':  ['mag','div','hit','eva','mag_pct','div_pct','hit_pct','eva_pct'],
+  '両手杖':  ['mag','div','hit','eva','mag_pct','div_pct','hit_pct','eva_pct'],
+  '片手鈍器':['div','hit','eva','crit','div_pct','hit_pct','eva_pct'],
+  '忍者刀':  ['atk','eva','crit','hit','atk_pct','eva_pct','hit_pct'],
+  '短剣':    ['atk','crit','hit','eva','atk_pct','hit_pct','eva_pct'],
+  '両手鈍器':['div','mag','hit','eva','div_pct','mag_pct','hit_pct','eva_pct'],
+  '投擲忍具':['atk','crit','hit','eva','atk_pct','hit_pct','eva_pct'],
+  '刀':      ['atk','crit','hit','eva','atk_pct','hit_pct','eva_pct'],
+  '大太刀':  ['atk','hit','eva','crit','atk_pct','hit_pct','eva_pct'],
+};
+
+function getWeaponType(){ return document.getElementById('hp-weapon-type')?.value||'片手剣'; }
+
+// ※会心は実数のみ（crit_pctは存在しない）
+const HP_NATURAL = {
+  '頭':  ['atk','mag','div','hit','def','res','mdef', 'atk_pct','mag_pct','div_pct','hit_pct','def_pct','res_pct','mdef_pct'],
+  '体':  ['eva','crit','spd','res','mdef', 'eva_pct','spd_pct','res_pct','mdef_pct'],
+  '腕':  ['atk','mag','div','hit','def','mdef', 'atk_pct','mag_pct','div_pct','hit_pct','def_pct','mdef_pct'],
+  '盾':  ['eva','crit','spd','res','mdef', 'eva_pct','spd_pct','res_pct','mdef_pct'],
+  '足':  ['hit','eva','spd','def','res','mdef', 'hit_pct','eva_pct','spd_pct','def_pct','res_pct','mdef_pct'],
+  '武器':['atk','mag','div','hit','eva','crit', 'atk_pct','mag_pct','div_pct','hit_pct','eva_pct'],
+  '装飾品':['atk','mag','div','hit','eva','crit','spd','def','res','mdef', 'atk_pct','mag_pct','div_pct','hit_pct','eva_pct','spd_pct','def_pct','res_pct','mdef_pct'],
+};
+// HP_UNWANTEDは動的計算：HP_NATURALからmtとsecondを除いたもの
+// makeWrong内でnat全体からmtとsecondを除いて選ぶため、staticリストは不要
+// ただし「明らかに不要」な加護をハズレとして出やすくする重み付けリスト
+const HP_UNWANTED = {
+  '頭':  ['eva','crit','spd','def','mdef','res','eva_pct','spd_pct','def_pct','res_pct','mdef_pct'],
+  '体':  ['atk','mag','div','hit','def','mdef','atk_pct','mag_pct','div_pct','hit_pct','def_pct','mdef_pct'],
+  '腕':  ['eva','crit','spd','res','mdef','def','eva_pct','spd_pct','res_pct','def_pct','mdef_pct'],
+  '盾':  ['atk','mag','div','hit','def','mdef','atk_pct','mag_pct','div_pct','hit_pct','def_pct','mdef_pct'],
+  '足':  ['atk','mag','div','crit','def','mdef','res','atk_pct','mag_pct','div_pct','def_pct','res_pct','mdef_pct'],
+  '武器':['spd','def','res','mdef','spd_pct','def_pct','res_pct','mdef_pct'],
+  '装飾品':[],
+};
+// 第二候補: メイン%（各部位で自然につく%加護）
+const HP_SECOND = {
+  '頭':  {atk:'atk_pct', mag:'mag_pct', div:'div_pct', crit:'spd',     eva:'spd',     def:'spd',     hit:'hit_pct'},
+  '体':  {atk:'crit',    mag:'crit',    div:'crit',    crit:'spd',     eva:'eva_pct', def:'spd',     hit:'crit'},
+  '腕':  {atk:'atk_pct', mag:'mag_pct', div:'div_pct', crit:'spd',     eva:'spd',     def:'spd',     hit:'hit_pct'},
+  '盾':  {atk:'spd',     mag:'spd',     div:'spd',     crit:'spd',     eva:'eva_pct', def:'spd',     hit:'spd'},
+  '足':  {atk:'hit',     mag:'hit',     div:'hit',     crit:'hit',     eva:'hit',     def:'hit',     hit:'spd'},
+  '武器':{atk:'atk_pct', mag:'mag_pct', div:'div_pct', crit:'spd',     eva:'spd',     def:'spd',     hit:'hit_pct'},
+  '装飾品':{atk:'atk_pct',mag:'mag_pct',div:'div_pct', crit:'spd',     eva:'eva_pct', def:'def_pct', hit:'hit_pct'},
+};
+// 第三候補: 職業別の自然につく優先度の高い加護
+// 職業×ビルド別の優先加護（3枠目以降）
+// スロット別に意味のある加護のみ返す
+const HP_THIRD_BY_JOB = {
+  '戦士':    ['crit','hit','spd'],
+  '盗賊':    ['crit','hit','spd'],
+  '騎士':    ['spd','crit','hit'],
+  '魔術師':  ['spd'],
+  '僧侶':    ['spd','res'],
+  '忍者':    ['crit','hit','spd'],
+  '侍':      ['crit','atk','mag','hit'],
+  'レンジャー':['hit','spd'],
+};
+// 頭・武器・腕・装飾品では回避・行動速度はメイン加護でない限り除外
+const HP_SLOT_EXCL = {
+  '頭':   ['eva','spd','spd_pct'],
+  '武器': ['eva','spd','spd_pct'],
+  '腕':   ['eva','spd','spd_pct'],
+  '装飾品':['eva','spd'],
+};
+
+// ビルド別の優先加護オーバーライド
+const HP_THIRD_BY_BUILD = {
+  '忍者刀':  ['eva','spd'],           // 忍者刀: 回避特化
+  '投擲':    ['hit','spd'],           // 投擲: 命中・行動速度
+  '防御':    ['hit','spd'],           // 防御騎士: 命中・行動速度
+  '会心':    ['atk','mag'],             // 侍会心: 攻撃力→魔力
+  '回避':    ['spd','eva'],           // 回避騎士: 行動速度・回避
+};
+const HP_MAIN_BY_JOB = {
+  '戦士':{標準:'atk'},'盗賊':{標準:'atk'},'レンジャー':{標準:'hit'},
+  '騎士':{標準:'atk',回避:'eva',防御:'def'},
+  '魔術師':{標準:'mag'},'僧侶':{標準:'div'},
+  '忍者':{会心:'crit',忍者刀:'eva',投擲:'atk'},
+  '侍':{会心:'crit',魔力:'mag',標準:'atk'},
+};
+const HP_BUILDS = {
+  '戦士':['標準'],'盗賊':['標準'],'レンジャー':['標準'],
+  '騎士':['標準','回避','防御'],'魔術師':['標準'],'僧侶':['標準'],
+  '忍者':['会心','忍者刀','投擲'],'侍':['会心','魔力'],
+};
+// 装備ランク別加護数値
+const HP_KAIGO_TABLE = {
+  slot12: {
+    r5:  {base:17, spd:10, crit:8,  pct:14, pct_spd:11},
+    r6s: {base:18, spd:11, crit:9,  pct:16, pct_spd:12},
+    r6d: {base:19, spd:11, crit:9,  pct:16, pct_spd:13},
+  },
+  slot34: {
+    r5:  {base:11, spd:8,  crit:6,  pct:12, pct_spd:9},
+    r6s: {base:12, spd:8,  crit:7,  pct:13, pct_spd:9},
+    r6d: {base:12, spd:9,  crit:7,  pct:13, pct_spd:10},
+  },
+};
+const HP_R6_EQUIPS = new Set([
+  '雪凶鳥の羽冠','ハンティンググローブ','ハンティングブーツ','銀の軽兜','銀の重兜',
+  '銀の軽鎧','銀の重鎧','銀の軽篭手','銀の重篭手','銀の軽足鎧','銀の重足鎧',
+  '銀の大太刀','銀の刀','銀の短剣','銀の苦無','銀の忍者刀','銀の指輪',
+]);
+function hpKaigoVal(t, slotNum){
+  // R5固定
+  // 変造しない後に変造したスロットは小さい値（slot34）を使用
+  const isPostSkipSlot=hpSlots[slotNum-1]&&hpSlots[slotNum-1].committed&&hpSlots[slotNum-1].changed;
+  const initCount=(hpRarity==='blue'?2:3);
+  const isLateHenzo=isPostSkipSlot&&(slotNum<=initCount);
+  const tier=(slotNum<=3&&!isLateHenzo)?'slot12':'slot34';
+  const tbl=HP_KAIGO_TABLE[tier]['r5'];
+  if(t==='spd') return tbl.spd;
+  if(t==='crit') return tbl.crit;
+  if(t==='spd_pct') return tbl.pct_spd;
+  if(t.endsWith('_pct')) return tbl.pct;
+  return tbl.base;
+}
+
+function rand(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+function getMain(){ return (HP_MAIN_BY_JOB[document.getElementById('hp-job').value]||{})[document.getElementById('hp-build').value]||'atk'; }
+function getPos(){ return document.getElementById('hp-pos')?.value||'前衛'; }
+function getContent(){ return document.getElementById('hp-content')?.value||'guarda'; }
+const HP_CONTENT_LABELS={'guarda':'🏰 グアルダ城塞','greater':'👿 グレーターデーモン','isbell':'❄️ イスベルク','oni':'👹 鬼啼島'};
+function updateContentLabel(){
+  const lbl=document.getElementById('hp-content-label');
+  if(lbl) lbl.textContent=HP_CONTENT_LABELS[getContent()]||getContent();
+}
+function getSecond(sn,mt){ return (HP_SECOND[sn]||{})[mt]||'spd'; }
+
+// State:
+// slots = [{kaigo, henzo, isCorrect, changed:false, committed:false, isRandom:false}]
+let hpRarity='blue', hpSlots=[], hpDone=false, hpHenzoDone=false;
+
+function maxSlots(){ return 4; } // 青・紫ともに最大4枠
+function henzoUsed(){ return hpHenzoDone || hpSlots.some(s=>s&&s.changed&&s.henzo); }
+function anyCommitted(){ return hpSlots.some(s=>s.committed); }
+
+function genSlots(){
+  const sn=document.getElementById('hp-slot').value;
+  if(!sn) return;
+  const mt=getMain();
+  const wt=sn==='武器'?getWeaponType():null;
+  const nat=sn==='武器'?(HP_WEAPON_TYPE_NAT[wt]||HP_NATURAL[sn]||[]):(HP_NATURAL[sn]||[]);
+  const second=getSecond(sn,mt);
+  const unwanted=(HP_UNWANTED[sn]||[]).filter(k=>k!==mt&&k!==second);
+  const used=new Set([mt]); // mt予約済み
+  const makeWrong=()=>{
+    const avail=unwanted.filter(x=>!used.has(x));
+    const allKeys=Object.keys(HP_KAIGO_NAMES).filter(x=>!used.has(x)&&x!==mt);
+    const k=avail.length?rand(avail):(allKeys.length?rand(allKeys):'def');
+    used.add(k);
+    return {kaigo:k||'def', origKaigo:k||'def', henzo:false, isCorrect:false, changed:false, committed:false, isRandom:false};
+  };
+  // 当たり = メイン実数（mt）
+  const sMain={kaigo:mt, origKaigo:mt, henzo:!nat.includes(mt), isCorrect:true, changed:false, committed:false, isRandom:false};
+  // 優先加護スロット（second）
+  const secondKaigo=getSecond(sn,mt);
+  const sCorrect={kaigo:secondKaigo, origKaigo:secondKaigo, henzo:false, isCorrect:true, changed:false, committed:false, isRandom:false};
+  // 第2優先加護（3枠目用）
+  const jobG=document.getElementById('hp-job')?.value||'';
+  const thirdKaigoForPurple=(HP_THIRD_BY_JOB[jobG]||[]).find(k=>k!==mt&&k!==secondKaigo&&(HP_WEAPON_TYPE_NAT[getWeaponType()]||HP_NATURAL[sn]||[]).includes(k));
+  const sCorrect2=thirdKaigoForPurple
+    ? {kaigo:thirdKaigoForPurple, origKaigo:thirdKaigoForPurple, henzo:false, isCorrect:true, changed:false, committed:false, isRandom:false}
+    : sCorrect;
+  // ハズレ
+  const sWrong = makeWrong();
+  const sWrong2 = makeWrong();
+  const sWrong3 = makeWrong();
+
+  // パターン選択
+  // 青: 25%メイン+優先 / 45%メイン+ハズレ / 15%ハズレ+ハズレ / 10%優先+優先 / 5%優先+ハズレ
+  // 紫: 15%メイン+優先+優先 / 20%メイン+優先+ハズレ / 35%メイン+ハズレ+ハズレ / 15%全ハズレ / 10%優先+優先+ハズレ / 5%優先+ハズレ+ハズレ
+  const rng = Math.random();
+  let baseSlots;
+  if(hpRarity==='blue'){
+    if(rng < 0.15){
+      baseSlots = [sWrong, sWrong2]; // ハズレ+ハズレ
+    } else if(rng < 0.20){
+      baseSlots = Math.random()<0.5?[sCorrect,sWrong]:[sWrong,sCorrect]; // 優先+ハズレ
+    } else if(rng < 0.30){
+      baseSlots = Math.random()<0.5?[sCorrect,sCorrect2]:[sCorrect2,sCorrect]; // 優先+優先
+    } else if(rng < 0.55){
+      baseSlots = Math.random()<0.5?[sMain,sWrong]:[sWrong,sMain]; // メイン+ハズレ
+    } else {
+      baseSlots = Math.random()<0.5?[sMain,sCorrect]:[sCorrect,sMain]; // メイン+優先
+    }
+  } else {
+    if(rng < 0.15){
+      baseSlots = [sWrong,sWrong2,sWrong3]; // 全ハズレ
+    } else if(rng < 0.20){
+      const s=[sCorrect,sWrong,sWrong2]; s.sort(()=>Math.random()-0.5); baseSlots=s; // 優先+ハズレ+ハズレ
+    } else if(rng < 0.30){
+      const s=[sCorrect,sCorrect2,sWrong]; s.sort(()=>Math.random()-0.5); baseSlots=s; // 優先+優先+ハズレ
+    } else if(rng < 0.65){
+      const s=[sMain,sWrong,sWrong2]; s.sort(()=>Math.random()-0.5); baseSlots=s; // メイン+ハズレ+ハズレ
+    } else if(rng < 0.85){
+      const s=[sMain,sCorrect,sWrong]; s.sort(()=>Math.random()-0.5); baseSlots=s; // メイン+優先+ハズレ
+    } else {
+      const s=[sMain,sCorrect,sCorrect2]; s.sort(()=>Math.random()-0.5); baseSlots=s; // メイン+優先+優先
+    }
+  }
+  hpSlots = baseSlots;
+  hpDone=false; hpHenzoDone=false;
+}
+
+window.hpUpdate=function(){
+  const job=document.getElementById('hp-job').value;
+  const bs=document.getElementById('hp-build');
+  bs.innerHTML=(HP_BUILDS[job]||['標準']).map(b=>`<option value="${b}">${b}</option>`).join('');
+  // 武器種リストを職業に合わせて更新
+  const sn=document.getElementById('hp-slot').value;
+  if(sn==='武器') hpOnSlotChange();
+  else hpRefresh();
+};
+const HP_JOB_WEAPONS = {
+  '戦士':  ['短剣','片手剣','両手剣','片手斧','両手斧','両手槍','片手鈍器','両手鈍器','片手杖','両手杖','弓'],
+  '騎士':  ['短剣','片手剣','両手剣','片手斧','両手斧','両手槍','片手鈍器','両手鈍器','片手杖','両手杖','弓'],
+  '盗賊':  ['短剣','片手剣','片手斧','片手鈍器','片手杖','弓'],
+  '魔術師':['短剣','片手杖','両手杖'],
+  '僧侶':  ['片手鈍器','両手鈍器','片手杖','両手杖'],
+  '忍者':  ['短剣','投擲忍具','忍者刀'],
+  '侍':    ['刀','大太刀'],
+  'レンジャー':['短剣','両手槍','弓'],
+};
+
+const HP_WEAPON_LABELS = {
+  '短剣':    '🔪 短剣/苦無',
+  '片手剣':  '⚔️ 片手剣',
+  '両手剣':  '🗡️ 両手剣/大剣',
+  '片手斧':  '🪓 片手斧',
+  '両手斧':  '🪓 両手斧',
+  '両手槍':  '🔱 両手槍',
+  '片手鈍器':'🔨 片手鈍器',
+  '両手鈍器':'🔨 両手鈍器',
+  '片手杖':  '🪄 片手杖',
+  '両手杖':  '🔮 両手杖',
+  '弓':      '🏹 弓',
+  '投擲忍具':'🌟 投擲忍具',
+  '忍者刀':  '🌙 忍者刀',
+  '刀':      '⚔️ 刀',
+  '大太刀':  '⚔️ 大太刀',
+};
+
+// 武器種ごとの両手/片手判定（R6数値用）
+const HP_WEAPON_IS_2H = new Set(['両手剣','両手斧','両手槍','大太刀','両手杖','両手鈍器']);
+
+window.hpOnSlotChange=function(){
+  const sn=document.getElementById('hp-slot').value;
+  const job=document.getElementById('hp-job').value;
+  const wsel=document.getElementById('hp-weapon-type');
+  if(wsel){
+    if(sn==='武器'){
+      const allowed=HP_JOB_WEAPONS[job]||Object.keys(HP_WEAPON_LABELS);
+      wsel.innerHTML=allowed.map(w=>`<option value="${w}">${HP_WEAPON_LABELS[w]||w}</option>`).join('');
+      wsel.style.display='inline-block';
+    } else {
+      wsel.style.display='none';
+    }
+  }
+  hpRefresh();
+};
+window.hpLoadEquips=function(){ hpRefresh(); };
+window.hpSetRarity=function(r,btn){
+  hpRarity=r;
+  document.querySelectorAll('#hp-rarity-tog button').forEach(b=>{b.style.border='1px solid var(--border)';b.style.color='var(--muted)';});
+  btn.style.border='2px solid var(--teal)';btn.style.color='var(--teal)';
+  hpRefresh();
+};
+window.hpRefresh=function(){
+  const job=document.getElementById('hp-job').value;
+  const sn=document.getElementById('hp-slot').value;
+  const area=document.getElementById('hp-main-area');
+  if(!job||!sn){area.style.display='none';return;}
+  area.style.display='block';
+  updateContentLabel();
+  genSlots();
+  render();
+};
+
+window.hpSlotChange=function(idx, val){
+  const s=hpSlots[idx];
+  if(!s||s.isRandom) return;
+  // 他に変造済みがあれば変更不可
+  if(henzoUsed()&&!s.changed) return;
+  const sn=document.getElementById('hp-slot').value;
+  const _wt=sn==='武器'?getWeaponType():null;
+  const nat=sn==='武器'?(HP_WEAPON_TYPE_NAT[_wt]||HP_NATURAL[sn]||[]):(HP_NATURAL[sn]||[]);
+  const isNat=nat.includes(val);
+  // %加護は変造扱いにしない（赤表示しない）
+  const willHenzo=!isNat&&!val.endsWith('_pct');
+  // %への変造は不可
+  // %への変造は許可（ヒントで指摘するのみ）
+  // 他の枠が変造済みなら変造不可
+  if(willHenzo&&hpSlots.some((s2,i)=>i!==idx&&s2.changed&&s2.henzo)) return;
+  const isChanged=val!==s.kaigo;
+  hpSlots[idx]={...s, kaigo:val, origKaigo:s.origKaigo||s.kaigo, henzo:willHenzo, changed:isChanged};
+  render();
+  // 精錬済みであればヒントを更新
+  // 精錬済み or 全スロットcommit済み（最終変造しない後）の場合にヒント更新
+  // 全スロットcommit済み or 最大スロット数に達している場合にヒント更新
+  const allCommitted=hpSlots.length>=maxSlots()&&hpSlots.every(s2=>!s2||s2.committed);
+  // 青4枠目表示後（3枠commit済み + 4枠目表示中）も含む
+  const blueAt4=hpRarity==='blue'&&hpSlots.length===maxSlots();
+  if(hpSlots.some(s2=>s2&&s2.senren)||allCommitted||blueAt4) showAdvice();
+};
+
+window.hpDoHenzo=function(){
+  // 変造するを一度でも押したか
+  if(hpHenzoDone){
+    showModal('変造済みのため変造できません。<br>各装備の変造は1回までです。');
+    return;
+  }
+  // ドロップダウンで変更した枠があるか確認
+  const anyChanged=hpSlots.some(s=>s&&s.changed); // committed済みでも変更があれば対象
+  if(!anyChanged){
+    showModal('変造する加護を選択してください。<br>ドロップダウンで変えたい加護を選んでから押してください。');
+    return;
+  }
+  hpHenzoDone=true;
+  hpSlots.forEach(s=>{ if(s) s.committed=true; });
+  addNextSlot();
+  render();
+};
+
+function showModal(msg){
+  let el=document.getElementById('hp-modal');
+  if(!el){
+    el=document.createElement('div');
+    el.id='hp-modal';
+    el.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--surface);border:2px solid var(--ember);border-radius:12px;padding:20px 24px;font-size:13px;color:var(--text);text-align:center;z-index:9999;max-width:280px;box-shadow:0 4px 20px rgba(0,0,0,0.5)';
+    el.onclick=function(){ el.style.display='none'; };
+    document.body.appendChild(el);
+  }
+  el.innerHTML=msg+'<br><span style="font-size:10px;color:var(--muted);margin-top:8px;display:block">タップで閉じる</span>';
+  el.style.display='block';
+  // タップで閉じる（自動消去なし）
+}
+
+window.hpSkipHenzo=function(){
+  // ドロップダウンで変更した内容を元に戻してcommit
+  // 未commitのスロットのみ元に戻してcommit
+  // すでにhpHenzoDone=trueなら変造済みなのでフラグは維持
+  const wasHenzoDone = hpHenzoDone;
+  hpSlots.forEach(s=>{
+    if(!s) return;
+    if(!s.committed) {
+      // 未commitスロットのみリセット
+      if(s.changed && s.origKaigo) s.kaigo = s.origKaigo;
+      s.changed=false; s.henzo=false;
+    }
+    s.committed=true;
+  });
+  // 変造済みでなかった場合のみリセット
+  if(!wasHenzoDone) hpHenzoDone=false;
+  // 最大スロット数に達している場合は次枠追加せずロック（ヒントは精錬後に表示）
+  if(hpSlots.length>=maxSlots()){
+    render();
+    return;
+  }
+  addNextSlot();
+  render();
+};
+
+// 部位別・職業別の優先度の高い%加護
+// 後衛は体・盾・足の優先加護が変わる（回避より攻撃/行動速度優先）
+const HP_POS_THIRD = {
+  後衛: {
+    '体':  ['crit','spd'],
+    '盾':  ['crit','spd'],
+    '足':  ['hit','spd'],
+  }
+};
+// 後衛僧侶は命中不要
+const HP_POS_JOB_OVERRIDE = {
+  後衛: {
+    '僧侶': ['spd','res'],
+  }
+};
+
+// 4枠目: 部位×メイン別の%加護優先リスト（先頭から被りなしで選択）
+const HP_FOURTH_PCT = {
+  // 頭・腕・武器: メイン%→命中%（アタッカー）/ 行動速度%（魔法）
+  '頭':  {atk:['atk_pct','hit_pct'], mag:['mag_pct','spd_pct'], div:['div_pct','spd_pct','res_pct'], hit:['hit_pct','atk_pct'], crit:['atk_pct','hit_pct'], eva:['eva_pct','spd_pct'], def:['def_pct','spd_pct']},
+  '腕':  {atk:['atk_pct','hit_pct'], mag:['mag_pct','spd_pct'], div:['div_pct','spd_pct','res_pct'], hit:['hit_pct','atk_pct'], crit:['atk_pct','hit_pct'], eva:['eva_pct','spd_pct'], def:['def_pct','spd_pct']},
+  '武器':{atk:['atk_pct','hit_pct'], mag:['mag_pct','hit_pct'], div:['div_pct','hit_pct','res_pct'], hit:['hit_pct','eva_pct'], crit:['atk_pct','hit_pct'], eva:['eva_pct','hit_pct'], def:['def_pct','hit_pct']},
+  // 体・盾: 回避%→行動速度%
+  '体':  {atk:['eva_pct','spd_pct'], mag:['eva_pct','spd_pct'], div:['eva_pct','spd_pct'], hit:['eva_pct','spd_pct'], crit:['eva_pct','spd_pct'], eva:['eva_pct','spd_pct'], def:['eva_pct','spd_pct']},
+  '盾':  {atk:['eva_pct','spd_pct'], mag:['eva_pct','spd_pct'], div:['eva_pct','spd_pct'], hit:['eva_pct','spd_pct'], crit:['eva_pct','spd_pct'], eva:['eva_pct','spd_pct'], def:['eva_pct','spd_pct']},
+  // 足: 回避%→命中%→行動速度%
+  '足':  {atk:['eva_pct','hit_pct','spd_pct'], mag:['eva_pct','spd_pct','hit_pct'], div:['eva_pct','spd_pct','hit_pct'], hit:['hit_pct','eva_pct','spd_pct'], crit:['eva_pct','hit_pct','spd_pct'], eva:['eva_pct','hit_pct','spd_pct'], def:['eva_pct','spd_pct','hit_pct']},
+  // 装飾品: メイン%→命中%→行動速度%
+  '装飾品':{atk:['atk_pct','hit_pct','spd_pct'], mag:['mag_pct','spd_pct','hit_pct'], div:['div_pct','spd_pct','hit_pct'], hit:['hit_pct','atk_pct','spd_pct'], crit:['atk_pct','hit_pct','spd_pct'], eva:['eva_pct','spd_pct','hit_pct'], def:['def_pct','spd_pct','hit_pct']},
+};
+
+function addNextSlot(){
+  if(hpSlots.length>=maxSlots()) return;
+  const sn=document.getElementById('hp-slot').value;
+  const wt2=sn==='武器'?getWeaponType():null;
+  const nat=sn==='武器'?(HP_WEAPON_TYPE_NAT[wt2]||HP_NATURAL[sn]||[]):(HP_NATURAL[sn]||[]);
+  const mt=getMain(), second=getSecond(sn,mt);
+  const job=document.getElementById('hp-job').value;
+  const usedSet=new Set(hpSlots.flatMap(s=>[s.kaigo, s.userHenzo?s.userHenzo.kaigo:null].filter(Boolean)));
+  const isLastSlot=hpSlots.length===maxSlots()-1;
+
+  let k;
+  if(isLastSlot){
+    // 4枠目: 優先リストから被りなしで選択
+    const pctList=(HP_FOURTH_PCT[sn]||{})[mt]||['atk_pct','eva_pct','spd_pct'];
+    const picked=pctList.find(p=>nat.includes(p)&&!usedSet.has(p));
+    if(picked){
+      k=picked;
+    } else {
+      const pctFallback=nat.filter(x=>x.endsWith('_pct')&&!usedSet.has(x));
+      k=pctFallback.length?pctFallback[0]:nat.filter(x=>!usedSet.has(x))[0]||'spd';
+    }
+  } else {
+    // 3枠目: メイン実数→メイン%→優先実数→優先%の優先度
+    const mtPct=mt+'_pct';
+    const secondPct=second+'_pct';
+    const slotExcl=HP_SLOT_EXCL[sn]||[];
+    const thirdCandidates=[mt, mtPct, second, secondPct]
+      .filter(k=>nat.includes(k)&&!usedSet.has(k)&&!slotExcl.includes(k));
+    k=thirdCandidates.length?thirdCandidates[0]:'spd';
+  }
+  hpSlots.push({kaigo:k, origKaigo:k, henzo:false, isCorrect:nat.includes(k), changed:false, committed:false, isRandom:false, senren:false});
+}
+
+function render(){
+  const sn=document.getElementById('hp-slot').value;
+  const _wt=sn==='武器'?getWeaponType():null;
+  const nat=sn==='武器'?(HP_WEAPON_TYPE_NAT[_wt]||HP_NATURAL[sn]||[]):(HP_NATURAL[sn]||[]);
+  const all=Object.keys(HP_KAIGO_NAMES);
+  const el=document.getElementById('hp-slots');
+  const henzoBtn=document.getElementById('hp-henzo-btn');
+  const skipBtn=document.getElementById('hp-skip-btn');
+
+  el.innerHTML=hpSlots.map((s,i)=>{
+    const col=s.henzo?'var(--ember)':'var(--green)';
+    if(!s||!s.kaigo) return '';
+    const senrenBonus=s.senren?0:-4;
+    const isPostSkipHenzo=s.committed&&s.changed&&(hpRarity==='blue'?i<2:i<3);
+    const val=hpKaigoVal(s.kaigo, i+1)+senrenBonus;
+    const valStr=s.kaigo.endsWith('_pct')?'+'+val+'%':'+'+val;
+    const valColor=isPostSkipHenzo?'var(--ember)':'var(--gold2)';
+    const label=`${HP_KAIGO_NAMES[s.kaigo]||s.kaigo} <span style="color:${valColor};font-size:10px">${valStr}</span>`;
+    // isRandomは編集不可、他に変造済みがあれば編集不可（committedでもドロップダウン表示）
+    // hpHenzoDone後はcommitted枠を全ロック、それ以外は変更済みがあれば他をロック
+    const anySlotChanged=hpSlots.some(s2=>s2&&s2.changed);
+    const locked=s.isRandom||(hpHenzoDone&&s.committed)||(s.committed&&s.changed)||(anySlotChanged&&!s.changed);
+    const canEdit=!locked;
+    const curVal=s.kaigo;
+    const dropDown=canEdit
+      ? `<select onchange="hpSlotChange(${i},this.value)" style="padding:3px 8px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:11px">
+          ${all.map(k=>{
+            const isN=nat.includes(k);
+            return `<option value="${k}" ${k===curVal?'selected':''} style="color:${isN?'var(--green)':'var(--ember)'}">${HP_KAIGO_NAMES[k]||k}</option>`;
+          }).join('')}
+        </select>`
+      : `<span style="color:${col};font-weight:600">${HP_KAIGO_NAMES[s.kaigo]||s.kaigo} <span style="color:${valColor};font-size:10px">${valStr}</span></span>`;
+    return `<div style="padding:8px 14px;border-radius:8px;border:1px solid var(--border);background:var(--surface);font-size:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <span style="color:var(--muted);min-width:36px;font-weight:600">${i+1}枠目</span>
+      ${dropDown}
+      ${locked&&!canEdit?'<span style="color:var(--muted);font-size:10px">🔒</span>':''}
+    </div>`;
+  }).join('');
+
+  // ボタン表示: 最後のスロットがcommittedでなく、かつスロットが存在する場合
+  const lastS=hpSlots[hpSlots.length-1];
+  const showBtns=hpSlots.length>0&&lastS&&!lastS.committed;
+  henzoBtn.style.display=showBtns?'block':'none';
+  if(skipBtn) skipBtn.style.display=showBtns?'block':'none';
+  const rerollBtn=document.getElementById('hp-reroll-btn');
+  if(rerollBtn) rerollBtn.style.display=hpSlots.length>0?'block':'none';
+  // 精錬石ボタン: 4枠全部commitされたら表示
+  const senrenBtn=document.getElementById('hp-senren-btn');
+  if(senrenBtn){
+    const allCommitted=hpSlots.length>=maxSlots()&&hpSlots.every(s=>s&&s.committed);
+    senrenBtn.style.display=allCommitted?'block':'none';
+  }
+}
+
+function showAdvice(){
+  const sn=document.getElementById('hp-slot').value;
+  const _wt=sn==='武器'?getWeaponType():null;
+  const nat=sn==='武器'?(HP_WEAPON_TYPE_NAT[_wt]||HP_NATURAL[sn]||[]):(HP_NATURAL[sn]||[]);
+  const mt=getMain(), second=getSecond(sn,mt);
+  const adv=document.getElementById('hp-advice');
+  const lines=[];
+
+  // ハズレ×ハズレ判定（最初の2枠が両方isCorrect:falseだった場合）
+  const initSlotCount=hpRarity==='blue'?2:3;
+  const initSlots=hpSlots.filter(s=>s&&!s.isRandom).slice(0,initSlotCount);
+  // メインなし（全ハズレ or 優先+ハズレ etc）も同様に厳選し直し推奨
+  const hasMainSlot=initSlots.some(s=>s&&s.origKaigo===mt);
+  const isDoubleHazure=(initSlots.length>=initSlotCount&&initSlots.every(s=>!s.isCorrect))||!hasMainSlot;
+
+  let isPerfectHenzo=false;
+  const allInitCorrect3=hpSlots.slice(0,initSlotCount).every(s=>s&&s.isCorrect);
+  const isMainPrioPatternEarly=allInitCorrect3&&hpRarity==='blue'&&hpSlots.length>=3;
+  hpSlots.forEach((s,i)=>{
+    if(isMainPrioPatternEarly) return; // メイン+優先パターンは個別ヒント不要
+    if(s.committed&&s.changed&&!hpHenzoDone) return; // 変造しない後の変更は⚠️のみ
+    if(!s||s.isRandom) return;
+    if(isDoubleHazure) return; // ハズレ×ハズレの場合は個別ヒントなし
+    const origKaigo=s.origKaigo||s.kaigo;
+    const origLabel=HP_KAIGO_NAMES[origKaigo]||origKaigo;
+    const origIsMain=origKaigo===mt;
+    const origIsSecond=origKaigo===second;
+    const origIsUnwanted=!origIsMain&&!origIsSecond;
+    if(s.changed){
+      const changedToMain=s.kaigo===mt;
+      const changedToPct=s.kaigo.endsWith('_pct');
+      // 元が当たり（isCorrect=true）なのに変造した場合
+      const wasCorrect=s.isCorrect;
+      // ハズレが他にあるか
+      const hasOtherHazure=hpSlots.some((s2,j)=>j!==i&&s2&&!s2.isCorrect&&!s2.isRandom&&!s2.changed);
+      // メイン優先優先パターンの4枠目変造（②の正解）かどうか
+      const initCount4=hpRarity==='blue'?2:3;
+      const isOptional4th=i>=initCount4&&hpSlots.slice(0,initCount4).every(s2=>s2&&s2.isCorrect);
+      if(isOptional4th){
+        // メイン優先優先②の正解パターン：4枠目変造
+        const isRecommended=['crit','spd'].includes(s.kaigo);
+        const physJobsC=['戦士','騎士','盗賊','忍者','侍','レンジャー'];
+        const isPhysC=physJobsC.includes(document.getElementById('hp-job')?.value||'');
+        if(isRecommended){
+          lines.push(`${i+1}枠目: メインは1ヶ所ですが不要な加護が一切ない、バランスの取れた最高品質の装備が完成しました！`);
+        } else {
+          const recStr=isPhysC
+            ? '<strong>会心</strong>・<strong>行動速度</strong>'
+            : '<strong>行動速度</strong>';
+          lines.push(`${i+1}枠目: 4枠目の変造には${recStr}がおすすめです。行動速度・会心は鍛える前後で差異が出にくいため後回しにできます。`);
+        }
+      } else if(wasCorrect&&changedToMain){
+        if(hasOtherHazure){
+          // メイン枠を変造したが、ハズレ枠を変造すべきだった
+          const hazureSlots=hpSlots.filter((s2,j)=>j!==i&&s2&&!s2.isCorrect&&!s2.isRandom);
+          const hazureLabels=hazureSlots.map(s2=>HP_KAIGO_NAMES[s2.origKaigo||s2.kaigo]||s2.kaigo);
+          const hazureStr=hazureLabels.map(l=>`<strong>${l}</strong>`).join('・');
+          if(origIsMain){
+            const allOthersCorrect=!hasOtherHazure&&hpSlots.every((s2,j)=>j===i||!s2||s2.isCorrect||s2.isRandom);
+            if(allOthersCorrect&&hpRarity==='blue'&&hpSlots.length>=3){
+              // 青メイン+優先パターンで優先→メインに変造した場合
+              const sn4b=document.getElementById('hp-slot').value;
+              const job4b=document.getElementById('hp-job')?.value||'';
+              const slotExcl4b=HP_SLOT_EXCL[sn4b]||[];
+              const prioKeys4b=[mt,...(HP_THIRD_BY_JOB[job4b]||[]).filter(k=>k!==mt)].filter(k=>!slotExcl4b.includes(k)&&!k.endsWith('_pct'));
+              const colors4b=['var(--gold2)','var(--teal)','var(--green)'];
+              function su4b(k){return (HP_KAIGO_NAMES[k]||k).replace('（実数）','').replace('（%）','');}
+              const prioSpans4b=prioKeys4b.slice(0,3).map((k,ci)=>`<strong style="color:${colors4b[ci]}">${su4b(k)}</strong>`).join('・');
+              lines.push(`${i+1}枠目: 3枠目に${prioSpans4b}等の欲しい加護がついた場合はレベル20まで鍛えましょう。欲しい加護がつかなかった場合はレベル15で止めて良い装備が出来るまでの繋ぎの装備にしましょう。4枠目に${prioSpans4b}がつけば高品質の装備と言えるでしょう。`);
+            } else if(allOthersCorrect){
+              // メイン+優先+優先パターンでメインを変造した場合
+              const sn2=document.getElementById('hp-slot').value;
+              const slotExclA=HP_SLOT_EXCL[sn2]||[];
+              const job2=document.getElementById('hp-job').value;
+              const fourthPrioKeys=[...(HP_THIRD_BY_JOB[job2]||[])].filter(k=>!slotExclA.includes(k)&&!k.endsWith('_pct'));
+              const fourthColors=['var(--gold2)','var(--teal)'];
+              const fourthSpans=fourthPrioKeys.slice(0,2).map((k,ci)=>`<strong style="color:${fourthColors[ci]}">${(HP_KAIGO_NAMES[k]||k).replace('（実数）','').replace('（%）','')}</strong>`).join('・');
+              const prioSlots=hpSlots.filter((s2,j)=>j!==i&&s2&&s2.isCorrect&&!s2.isRandom);
+              const prioLabelA=prioSlots.length>0?(HP_KAIGO_NAMES[prioSlots[0].origKaigo||prioSlots[0].kaigo]||prioSlots[0].kaigo):'優先加護';
+              // 物理攻撃職のみ会心を4枠目推奨に含める
+              const physJobs2=['戦士','騎士','盗賊','忍者','侍','レンジャー'];
+              const isPhys2=physJobs2.includes(job2);
+              const fourthHenzo=isPhys2
+                ? '<strong>会心</strong>・<strong>行動速度</strong>'
+                : '<strong>行動速度</strong>';
+              lines.push(`${i+1}枠目: この装備には正解が2つあります。<br>①<strong>${prioLabelA}</strong>等の優先加護の枠を変造して<strong>${HP_KAIGO_NAMES[mt]}</strong>にする方法（メインが2ヶ所の最高品質）<br>②変造せずにレベル20まで鍛えて4枠目を開放し、4枠目に${fourthHenzo}を変造する方法（行動速度・会心は鍛える前後で差異が出にくいため後回しにできます）`);
+            } else {
+              lines.push(`${i+1}枠目: メイン加護の<strong>${origLabel}</strong>は変造しないほうがよかったです。<strong>${hazureStr}</strong>の枠を変造して<strong>${HP_KAIGO_NAMES[mt]}</strong>に変えるのがおすすめでした。`);
+            }
+          } else {
+            const hazureSlot=hazureSlots[0];
+            const hazureLabel=hazureSlot?(HP_KAIGO_NAMES[hazureSlot.origKaigo||hazureSlot.kaigo]||hazureSlot.kaigo):'不要な加護';
+            // 優先度高い加護枠を変造した場合
+            lines.push(`${i+1}枠目: <strong>${origLabel}</strong>の枠ではなく<strong>${hazureLabel}</strong>の枠を<strong>${HP_KAIGO_NAMES[mt]}</strong>に変造すれば最高品質の装備が作れました。現状は不要な加護が1ヶ所残っているためレベル20まで鍛えないようにしましょう。`);
+          }
+        } else if(!origIsMain){
+          // 優先→メインに変造（メイン+優先パターン）→3枠目に不要加護が残る
+          const sn4=document.getElementById('hp-slot').value;
+          const job4=document.getElementById('hp-job').value;
+          const slotExcl4=HP_SLOT_EXCL[sn4]||[];
+          const prioKeys4=[mt,...(HP_THIRD_BY_JOB[job4]||[]).filter(k=>k!==mt)].filter(k=>!slotExcl4.includes(k)&&!k.endsWith('_pct'));
+          const colors4=['var(--gold2)','var(--teal)','var(--green)'];
+          function su4(k){return (HP_KAIGO_NAMES[k]||k).replace('（実数）','').replace('（%）','');}
+          const prioSpans4=prioKeys4.slice(0,3).map((k,ci)=>`<strong style="color:${colors4[ci]}">${su4(k)}</strong>`).join('・');
+          lines.push(`${i+1}枠目: 3枠目に${prioSpans4}等の欲しい加護がついた場合はレベル20まで鍛えましょう。欲しい加護がつかなかった場合はレベル15で止めて良い装備が出来るまでの繋ぎの装備にしましょう。4枠目に${prioSpans4}がつけば高品質の装備と言えるでしょう。`);
+        } else {
+          lines.push(`${i+1}枠目: <strong>${origLabel}</strong>から<strong>${HP_KAIGO_NAMES[mt]}</strong>に変造！ ✅ 正解です！`);
+        }
+      } else if(!wasCorrect&&changedToMain){
+        // ハズレをメインに変造した場合
+        const initCount=hpRarity==='blue'?2:3;
+        const otherHazureRemain=hpSlots.slice(0,initCount).some((s2,j)=>j!==i&&s2&&!s2.isCorrect&&!s2.changed);
+        // 他に優先加護スロット（isCorrect=true、メイン以外）があるか → メイン優先ハズレパターン
+        const hasPrioRemain=hpSlots.slice(0,initCount).some((s2,j)=>j!==i&&s2&&s2.isCorrect&&s2.kaigo!==mt);
+        if(!otherHazureRemain&&hasPrioRemain){
+          isPerfectHenzo=true; // 最高品質フラグ
+          // メイン優先ハズレ → ハズレをメインに変造 → 3枠全て良品
+          const sn2=document.getElementById('hp-slot').value;
+          const slotExclH=HP_SLOT_EXCL[sn2]||[];
+          const job2=document.getElementById('hp-job').value;
+          const prioKeysH=[...(HP_THIRD_BY_JOB[job2]||[])].filter(k=>!slotExclH.includes(k)&&!k.endsWith('_pct'));
+          const prioColorsH=['var(--gold2)','var(--teal)','var(--green)'];
+          const prioSpansH=prioKeysH.slice(0,3).map((k,ci)=>`<strong style="color:${prioColorsH[ci]}">${(HP_KAIGO_NAMES[k]||k).replace('（実数）','').replace('（%）','')}</strong>`).join('・');
+          lines.push(`${i+1}枠目: 必要な加護が3ヶ所揃った最高品質の装備が完成しました！レベル20まで鍛えて4枠目の加護を開放しましょう。4枠目に${prioSpansH}等の優先度が高い加護がつけば神装備になります。`);
+        } else if(otherHazureRemain){
+          const sn4=document.getElementById('hp-slot').value;
+          const job4=document.getElementById('hp-job').value;
+          const slotExcl4=HP_SLOT_EXCL[sn4]||[];
+          const prioKeys4=[mt,...(HP_THIRD_BY_JOB[job4]||[]).filter(k=>k!==mt)].filter(k=>!slotExcl4.includes(k)&&!k.endsWith('_pct'));
+          const colors4=['var(--gold2)','var(--teal)','var(--green)'];
+          function su4(k){return (HP_KAIGO_NAMES[k]||k).replace('（実数）','').replace('（%）','');}
+          const prioSpans4=prioKeys4.slice(0,3).map((k,ci)=>`<strong style="color:${colors4[ci]}">${su4(k)}</strong>`).join('・');
+          lines.push(`${i+1}枠目: 3枠目に${prioSpans4}等の欲しい加護がついた場合はレベル20まで鍛えましょう。欲しい加護がつかなかった場合はレベル15で止めて良い装備が出来るまでの繋ぎの装備にしましょう。4枠目に${prioSpans4}がつけば高品質の装備と言えるでしょう。`);
+        }
+      } else if(wasCorrect&&!changedToMain){
+        const hazureSlot2=hpSlots.find((s2,j)=>j!==i&&s2&&!s2.isCorrect&&!s2.isRandom);
+        const hazureLabel2=hazureSlot2?(HP_KAIGO_NAMES[hazureSlot2.origKaigo||hazureSlot2.kaigo]||hazureSlot2.kaigo):'不要な加護';
+        const allOthersCorrect2=!hazureSlot2&&hpSlots.every((s2,j)=>j===i||!s2||s2.isCorrect||s2.isRandom);
+        if(origIsMain&&allOthersCorrect2){
+          // メイン優先優先パターンでメインを変造した場合
+          const sn3=document.getElementById('hp-slot').value;
+          const job3=document.getElementById('hp-job').value;
+          const slotExclB=HP_SLOT_EXCL[sn3]||[];
+          const physJobsB=['戦士','騎士','盗賊','忍者','侍','レンジャー'];
+          const isPhysB=physJobsB.includes(job3);
+          const fourthHenzoB=isPhysB
+            ? '<strong>会心</strong>・<strong>行動速度</strong>'
+            : '<strong>行動速度</strong>';
+          const prioSlotsB=hpSlots.filter((s2,j)=>j!==i&&s2&&s2.isCorrect&&!s2.isRandom);
+          const prioLabelB=prioSlotsB.length>0?(HP_KAIGO_NAMES[prioSlotsB[0].origKaigo||prioSlotsB[0].kaigo]||prioSlotsB[0].kaigo):'優先加護';
+          lines.push(`${i+1}枠目: この装備には正解が2つあります。<br>①<strong>${prioLabelB}</strong>等の優先加護の枠を変造して<strong>${HP_KAIGO_NAMES[mt]}</strong>にする方法（メインが2ヶ所の最高品質）<br>②変造せずにレベル20まで鍛えて4枠目を開放し、不要な加護が付いた時の保険として変造枠を温存しておく方法。4枠目に不要な加護が付いた際は${fourthHenzoB}に変造します（行動速度・会心は鍛える前後で差異が出にくいため後回しにできます）`);
+        } else if(!origIsMain&&hazureSlot2){
+          // 優先加護→ハズレに変造した場合（他にハズレあり）
+          lines.push(`${i+1}枠目: <strong>${origLabel}</strong>ではなく<strong>${hazureLabel2}</strong>の枠を<strong>${HP_KAIGO_NAMES[mt]}</strong>に変造すれば最高品質の装備が作れました。`);
+        } else if(!origIsMain&&!hazureSlot2){
+          // 優先加護→メイン以外に変造（メイン+優先パターン、ハズレなし）
+          lines.push(`${i+1}枠目: <strong>${origLabel}</strong>は不要な加護でした。変造するなら<strong>${HP_KAIGO_NAMES[mt]}</strong>を選ぶのが正解でした。`);
+        } else {
+          lines.push(`${i+1}枠目: <strong>${origLabel}</strong>は有用な加護でした。変造するなら<strong>${hazureLabel2}</strong>の枠を選び<strong>${HP_KAIGO_NAMES[mt]}</strong>に変造しましょう。`);
+        }
+      } else {
+        // ハズレをメイン以外に変造した場合
+        if(!wasCorrect&&!changedToMain&&!changedToPct){
+          // メイン優先ハズレパターンで、ハズレをメイン以外に変造した場合
+          const hasPrioSlotRemain=hpSlots.some((s2,j)=>j!==i&&s2&&s2.isCorrect&&!s2.isRandom);
+          if(hasPrioSlotRemain){
+            lines.push(`${i+1}枠目: <strong>${origLabel}</strong>ではなく<strong>${HP_KAIGO_NAMES[mt]}</strong>に変造すれば最高品質の装備が作れました。現状は不要な加護が1ヶ所残っているためレベル20まで鍛えないようにしましょう。`);
+          } else {
+            lines.push(`${i+1}枠目: <strong>${origLabel}</strong>は不要な加護でした。変造するなら<strong>${HP_KAIGO_NAMES[mt]}</strong>を選ぶのが正解でした。`);
+          }
+        } else {
+          lines.push(`${i+1}枠目: 変造では<strong>${HP_KAIGO_NAMES[mt]}</strong>を選ぶのが正解でした。`);
+        }
+      }
+    } else if(origIsUnwanted&&s.committed&&!hpHenzoDone&&i<initSlotCount&&!allInitCorrect3){
+      // メイン優先優先パターン(allInitCorrect3)ではヒントなし
+      lines.push(`${i+1}枠目: <strong>${origLabel}</strong>は不要な加護でした。変造で<strong>${HP_KAIGO_NAMES[mt]}</strong>に変えるのがおすすめでした。`);
+    }
+  });
+  let html='';
+  if(lines.length>0){
+    html=`<div class="tip-box" style="border-left-color:var(--ember)"><strong>💡 変造のヒント：</strong><br>${lines.join('<br>')}</div>`;
+  }
+  if(isDoubleHazure){
+    function stripUnit(k){ return (HP_KAIGO_NAMES[k]||k).replace('（実数）','').replace('（%）',''); }
+    if(hpRarity==='blue'){
+      html+=`<div class="tip-box" style="border-left-color:var(--muted);margin-top:8px">⚠️ 1枠目・2枠目ともに<strong>${HP_KAIGO_NAMES[mt]}</strong>以外の加護でした。<br>変造で直しても1枠しか修正できないため、<strong>${HP_KAIGO_NAMES[mt]}</strong>が初めからついている装備を厳選し直すのがおすすめです。</div>`;
+    } else {
+      const job=document.getElementById('hp-job').value;
+      const sn=document.getElementById('hp-slot').value;
+      const build2=document.getElementById('hp-build')?.value||'';
+      const slotExcl2=HP_SLOT_EXCL[sn]||[];
+      const natSn=(HP_WEAPON_TYPE_NAT[getWeaponType()]||HP_NATURAL[sn]||[]);
+      // %加護と除外スロット加護を除いた優先リスト
+      const prioKeys=[...(HP_THIRD_BY_BUILD[build2]||HP_THIRD_BY_JOB[job]||[])]
+        .filter(k=>natSn.includes(k)&&!slotExcl2.includes(k)&&!k.endsWith('_pct')&&!(HP_SLOT_EXCL[sn]||[]).includes(k));
+      const prioColors=['var(--gold2)','var(--teal)','var(--green)'];
+      const prioSpans=prioKeys.slice(0,3).map((k,i)=>`<strong style="color:${prioColors[i]}">${stripUnit(k)}</strong>`).join('・');
+      const mtLabel2=stripUnit(mt);
+      // メイン（%）
+      const mtPctKey=mt+'_pct';
+      const mtPctLabel=stripUnit(mtPctKey);
+      const hasMtPct=natSn.includes(mtPctKey);
+      const mtPctStr=hasMtPct?`・<strong>${mtPctLabel}</strong>`:'';
+      const mtRealLabel=HP_KAIGO_NAMES[mt]||mt;
+      const mtPctFullLabel=hasMtPct?(HP_KAIGO_NAMES[mtPctKey]||mtPctKey):'';
+      html+=`<div class="tip-box" style="border-left-color:var(--muted);margin-top:8px">⚠️ 1〜3枠目全て<strong>${mtRealLabel}</strong>以外の加護でした。<br>変造しても1枠しか修正できないため、<strong>${mtRealLabel}</strong>${hasMtPct?'と<strong>'+mtPctFullLabel+'</strong>':''}${prioSpans?'・'+prioSpans:''}等2枠に欲しい加護が初めからついている装備を厳選し直すのがおすすめです。</div>`;
+    }
+  }
+
+  // ハズレ→当たりの正解変造後の助言（変造後に3枠目が表示された場合）
+  const correctHenzo=hpSlots.some(s=>s&&s.changed&&!s.isCorrect&&s.kaigo===mt);
+  if(!isDoubleHazure&&correctHenzo&&hpSlots.length>=3&&!isPerfectHenzo){
+    const slot3=hpSlots[2];
+    if(slot3){
+      const sn=document.getElementById('hp-slot').value;
+      const job=document.getElementById('hp-job').value;
+      function stripUnit(k){ return (HP_KAIGO_NAMES[k]||k).replace('（実数）','').replace('（%）',''); }
+      const goodKaigo=[mt,second,...(HP_THIRD_BY_JOB[job]||[])];
+      const isSlot3Good=goodKaigo.includes(slot3.kaigo);
+      const mtLabel=stripUnit(mt);
+      const secondLabel=stripUnit(second);
+      const priorityLabel=mtLabel!==secondLabel?`${mtLabel}や${secondLabel}`:`${mtLabel}`;
+      // 優先加護リストを色つきで表示（実数/%表記なし）
+      const slotExcl3=HP_SLOT_EXCL[sn]||[];
+      const prioKeys=[mt, ...( (HP_THIRD_BY_JOB[job]||[]).filter(k=>k!==mt&&!slotExcl3.includes(k)) )];
+      const colors=['var(--gold2)','var(--teal)','var(--green)','var(--ember)'];
+      const prioSpans=prioKeys.slice(0,4).map((k,ci)=>`<strong style="color:${colors[ci]}">${stripUnit(k)}</strong>`).join('・');
+
+      if(isSlot3Good){
+        html+=`<div class="tip-box" style="border-left-color:var(--green);margin-top:8px">3枠目に${prioSpans}等の欲しい加護がついた場合はレベル20まで鍛えましょう。<br>欲しい加護がつかなかった場合はレベル15で止めて良い装備が出来るまでの繋ぎの装備にしましょう。<br>4枠目に${prioSpans}がつけば高品質の装備と言えるでしょう。</div>`;
+      } else {
+        html+=`<div class="tip-box" style="border-left-color:var(--muted);margin-top:8px">欲しい加護がつかなかったためレベル15で止めて、高品質の装備ができるまでの繋ぎの装備にしましょう。</div>`;
+      }
+    }
+  }
+  // メイン・優先パターンの処理（青・紫共通の初期2枠が全correct）
+  const noHenzoDone=!hpHenzoDone&&!hpSlots.some(s=>s&&s.changed);
+  const isMainPrioPattern=isMainPrioPatternEarly;
+
+  if(isMainPrioPattern){
+    const slot3mp=hpSlots[2];
+    const physJobsMP=['戦士','騎士','盗賊','忍者','侍','レンジャー'];
+    const isPhysMP=physJobsMP.includes(document.getElementById('hp-job')?.value||'');
+    const recKeys=['crit','spd'];
+    const snMP=document.getElementById('hp-slot').value;
+    const jobMP=document.getElementById('hp-job')?.value||'';
+    const slotExclMP=HP_SLOT_EXCL[snMP]||[];
+    const prioKeysMP=[mt,...(HP_THIRD_BY_JOB[jobMP]||[]).filter(k=>k!==mt)].filter(k=>!slotExclMP.includes(k)&&!k.endsWith('_pct'));
+    const colorsMP=['var(--gold2)','var(--teal)','var(--green)'];
+    function suMP(k){return (HP_KAIGO_NAMES[k]||k).replace('（実数）','').replace('（%）','');}
+    const prioSpansMP=prioKeysMP.slice(0,3).map((k,ci)=>`<strong style="color:${colorsMP[ci]}">${suMP(k)}</strong>`).join('・');
+    const recStrMP=isPhysMP?'<strong>会心</strong>・<strong>行動速度</strong>':'<strong>行動速度</strong>';
+
+    if(slot3mp&&slot3mp.changed){
+      const isRecHenzo=recKeys.includes(slot3mp.kaigo);
+      if(isRecHenzo){
+        // 3枠目を会心/行動速度に変造
+        html+=`<div class="tip-box" style="border-left-color:var(--teal);margin-top:8px">レベル15でストップを推奨します。余裕があれば4枠目開放を目指し、${prioSpansMP}が付けば高品質の装備と言えるでしょう。</div>`;
+      } else {
+        // 3枠目をそれ以外に変造
+        html+=`<div class="tip-box" style="border-left-color:var(--muted);margin-top:8px">3枠目に必要な加護が揃い不要な加護はありませんが、変造した加護はレベルアップボーナスが付かないため数値が低くなります。レベル15でのストップを推奨します。</div>`;
+      }
+    } else if(noHenzoDone){
+      // 3枠目も変造なし → 紫4枠目と同じ文章
+      const recStr4MP=isPhysMP?'<strong>会心</strong>・<strong>行動速度</strong>':'<strong>行動速度</strong>';
+      html+=`<div class="tip-box" style="border-left-color:var(--green);margin-top:8px">4枠目に必要な加護が付いた場合は最高品質の装備です。<br>4枠目に不要な加護が付いた場合は${recStr4MP}に変造することをおすすめします。</div>`;
+    }
+    // 1-2枠目の変造チェック（レベルアップ前に変造するよう助言）
+    const initHenzoedSlots=hpSlots.slice(0,2).filter(s=>s&&s.changed);
+    if(initHenzoedSlots.length>0){
+      html+=`<div class="tip-box" style="border-left-color:var(--ember);margin-top:8px">⚠️ 変造はレベルアップ前（強化前）に行うのが基本です。レベルアップボーナスが付いてから変造するのはもったいないため、次回は強化前に変造するようにしましょう。</div>`;
+    }
+  }
+  // 紫：メイン優先優先パターンで1〜3枠目を変造した場合も同じ注意
+  if(allInitCorrect3&&hpRarity==='purple'&&hpSlots.length>initSlotCount){
+    const initHenzoedPurple=hpSlots.slice(0,initSlotCount).filter(s=>s&&s.changed);
+    if(initHenzoedPurple.length>0){
+      html+=`<div class="tip-box" style="border-left-color:var(--ember);margin-top:8px">⚠️ 変造はレベルアップ前（強化前）に行うのが基本です。レベルアップボーナスが付いてから変造するのはもったいないため、次回は強化前に変造するようにしましょう。</div>`;
+    }
+  }
+
+  // メイン優先優先パターンで変造なしの場合：4枠目開放の案内（紫）
+  if(allInitCorrect3&&noHenzoDone&&hpSlots.length>initSlotCount&&!isMainPrioPattern){
+    const physJobs4=['戦士','騎士','盗賊','忍者','侍','レンジャー'];
+    const isPhys4=physJobs4.includes(document.getElementById('hp-job')?.value||'');
+    const recStr4=isPhys4
+      ? '<strong>会心</strong>・<strong>行動速度</strong>'
+      : '<strong>行動速度</strong>';
+    html+=`<div class="tip-box" style="border-left-color:var(--green);margin-top:8px">4枠目に必要な加護が付いた場合は最高品質の装備です。<br>4枠目に不要な加護が付いた場合は${recStr4}に変造することをおすすめします。</div>`;
+  }
+
+  // 全パターン共通：変造しない後にスロットを変造した場合の注意
+  // committed=trueかつchanged=trueのスロットがある = 変造しない後に変造した
+  const postSkipChanged=hpSlots.slice(0,initSlotCount).some(s=>s&&s.committed&&s.changed);
+  if(postSkipChanged) html=''; // 強化後変造の場合は他のヒントをクリア
+  if(postSkipChanged){
+    html+=`<div class="tip-box" style="border-left-color:var(--ember);margin-top:8px">⚠️ 変造はレベルアップ前（強化前）に行うのが基本です。レベルアップボーナスが付いてから変造するのはもったいないため、次回は強化前に変造するようにしましょう。</div>`;
+  }
+
+  if(adv){ adv.style.display='block'; adv.innerHTML=html; }
+}
+
+window.hpReroll=function(){
+  // 厳選し直す: スロットをリセットして再生成
+  hpSlots=[]; hpDone=false; hpHenzoDone=false;
+  document.getElementById('hp-advice').innerHTML='';
+  document.getElementById('hp-advice').style.display='none';
+  const senrenBtn=document.getElementById('hp-senren-btn');
+  if(senrenBtn) senrenBtn.style.display='none';
+  genSlots();
+  render();
+};
+
+window.hpSenren=function(){
+  hpSlots.forEach(s=>{ if(s) s.senren=true; });
+  render();
+  const btn=document.getElementById('hp-senren-btn');
+  if(btn) btn.style.display='none';
+  showAdvice();
+};
+
+})();
 
 </script>
 </body>
