@@ -443,14 +443,7 @@ footer{text-align:center;padding:18px;font-size:11px;color:var(--dim);border-top
 
 
 <div id="cs-henzo-practice" class="csec"><div class="main">
-  <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:nowrap;margin-bottom:0">
-    <div class="stitle" style="margin-bottom:0;white-space:nowrap">🔨 変造練習シミュレーター</div>
-    <select id="hp-content-title" onchange="document.getElementById('hp-content').value=this.value;hpRefresh();" style="padding:3px 8px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:12px;flex-shrink:0">
-      <option value="guarda">🏰 グアルダ城塞</option>
-      <option value="greater">👿 グレーターデーモン</option>
-      <option value="isbell">❄️ イスベルク</option>
-    </select>
-  </div>
+  <div class="stitle">🔨 変造練習シミュレーター</div>
   <p style="font-size:12px;color:var(--muted);margin-bottom:14px">変造の判断を練習できます。装備・職業を選ぶと現在の加護状況と変造アドバイスが表示されます。</p>
 
   <!-- ①職業・ビルド選択 -->
@@ -468,7 +461,7 @@ footer{text-align:center;padding:18px;font-size:11px;color:var(--dim);border-top
       <option value="レンジャー">🏹 レンジャー</option>
     </select>
     <span style="font-size:12px;color:var(--gold);font-weight:600">ビルド</span>
-    <select id="hp-build" onchange="hpUpdate()" style="padding:5px 10px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:12px">
+    <select id="hp-build" onchange="hpRefresh()" style="padding:5px 10px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:12px">
       <option value="標準">標準</option>
     </select>
   </div>
@@ -2371,12 +2364,13 @@ const EQUIP_DB = {
 (function(){
 
 const HP_KAIGO_NAMES = {
-  hit:'命中（実数）', eva:'回避（実数）', spd:'行動速度（実数）', crit:'会心（実数）',
-  atk:'攻撃力（実数）', mag:'魔力（実数）', div:'神力（実数）', def:'防御（実数）',
-  res:'抵抗（実数）', mdef:'魔法防御（実数）',
-  atk_pct:'攻撃力（%）', mag_pct:'魔力（%）', div_pct:'神力（%）', def_pct:'防御（%）',
-  hit_pct:'命中（%）', eva_pct:'回避（%）', spd_pct:'行動速度（%）',
-  res_pct:'抵抗（%）', mdef_pct:'魔法防御（%）'
+  atk:'攻撃力（実数）', mag:'魔力（実数）', div:'神力（実数）',
+  hit:'命中（実数）', eva:'回避（実数）', res:'抵抗（実数）',
+  def:'防御（実数）', mdef:'魔法防御（実数）',
+  crit:'会心（実数）', spd:'行動速度（実数）',
+  atk_pct:'攻撃力（%）', mag_pct:'魔力（%）', div_pct:'神力（%）',
+  hit_pct:'命中（%）', eva_pct:'回避（%）', res_pct:'抵抗（%）',
+  def_pct:'防御（%）', mdef_pct:'魔法防御（%）', spd_pct:'行動速度（%）'
 };
 // 武器種別の自然加護オーバーライド
 const HP_WEAPON_TYPE_NAT = {
@@ -2401,13 +2395,14 @@ function getWeaponType(){ return document.getElementById('hp-weapon-type')?.valu
 
 // ※会心は実数のみ（crit_pctは存在しない）
 const HP_NATURAL = {
-  '頭':  ['atk','mag','div','hit','def','res','mdef', 'atk_pct','mag_pct','div_pct','hit_pct','def_pct','res_pct','mdef_pct'],
-  '体':  ['eva','crit','spd','res','mdef', 'eva_pct','spd_pct','res_pct','mdef_pct'],
+  // ※会心は実数のみ（会心%は存在しない）
+  '頭':  ['atk','mag','div','hit','res','def','mdef', 'atk_pct','mag_pct','div_pct','hit_pct','res_pct','def_pct','mdef_pct'],
+  '体':  ['eva','res','def','mdef','crit','spd', 'eva_pct','res_pct','def_pct','mdef_pct','spd_pct'],
   '腕':  ['atk','mag','div','hit','def','mdef', 'atk_pct','mag_pct','div_pct','hit_pct','def_pct','mdef_pct'],
-  '盾':  ['eva','crit','spd','res','mdef', 'eva_pct','spd_pct','res_pct','mdef_pct'],
-  '足':  ['hit','eva','spd','def','res','mdef', 'hit_pct','eva_pct','spd_pct','def_pct','res_pct','mdef_pct'],
+  '盾':  ['eva','res','def','mdef','crit','spd', 'eva_pct','res_pct','def_pct','mdef_pct','spd_pct'],
+  '足':  ['hit','eva','res','def','mdef','spd', 'hit_pct','eva_pct','res_pct','def_pct','mdef_pct','spd_pct'],
   '武器':['atk','mag','div','hit','eva','crit', 'atk_pct','mag_pct','div_pct','hit_pct','eva_pct'],
-  '装飾品':['atk','mag','div','hit','eva','crit','spd','def','res','mdef', 'atk_pct','mag_pct','div_pct','hit_pct','eva_pct','spd_pct','def_pct','res_pct','mdef_pct'],
+  '装飾品':['atk','mag','div','hit','eva','res','def','mdef','crit','spd', 'atk_pct','mag_pct','div_pct','hit_pct','eva_pct','res_pct','def_pct','mdef_pct','spd_pct'],
 };
 // HP_UNWANTEDは動的計算：HP_NATURALからmtとsecondを除いたもの
 // makeWrong内でnat全体からmtとsecondを除いて選ぶため、staticリストは不要
@@ -2438,11 +2433,11 @@ const HP_THIRD_BY_JOB = {
   '戦士':    ['crit','hit','spd'],
   '盗賊':    ['crit','hit','spd'],
   '騎士':    ['spd','crit','hit'],
-  '魔術師':  ['spd'],
-  '僧侶':    ['spd','res'],
+  '魔術師':  ['spd'],            // 命中不要
+  '僧侶':    ['spd','res'],       // 命中不要（物理攻撃しない）
   '忍者':    ['crit','hit','spd'],
-  '侍':      ['crit','atk','mag','hit'],
-  'レンジャー':['hit','spd'],
+  '侍':      ['crit','atk','mag','hit','spd'],
+  'レンジャー':['spd'],          // メイン命中→次に行動速度
 };
 // 頭・武器・腕・装飾品では回避・行動速度はメイン加護でない限り除外
 const HP_SLOT_EXCL = {
@@ -2456,9 +2451,14 @@ const HP_SLOT_EXCL = {
 const HP_THIRD_BY_BUILD = {
   '忍者刀':  ['eva','spd'],           // 忍者刀: 回避特化
   '投擲':    ['hit','spd'],           // 投擲: 命中・行動速度
-  '防御':    ['hit','spd'],           // 防御騎士: 命中・行動速度
-  '会心':    ['atk','mag'],             // 侍会心: 攻撃力→魔力
-  '回避':    ['spd','eva'],           // 回避騎士: 行動速度・回避
+  '防御':    ['def','mdef','spd'],     // 防御騎士: 防御・魔防がメイン、次に行動速度
+  '回避':    ['spd','eva'],           // 回避騎士: 行動速度・回避（命中不要）
+};
+// 職業＋ビルドの組み合わせ専用優先加護（HP_THIRD_BY_BUILDより優先）
+const HP_THIRD_BY_JOB_BUILD = {
+  '侍_会心':   ['atk','mag','hit','spd'], // 侍会心: メイン会心→攻撃・魔力・命中・行動速度
+  '侍_魔力':   ['atk','mag','hit','spd'], // 侍魔力: メイン魔力→攻撃・命中・行動速度
+  '忍者_会心': ['hit','spd'],             // 忍者会心: メイン会心→命中・行動速度
 };
 const HP_MAIN_BY_JOB = {
   '戦士':{標準:'atk'},'盗賊':{標準:'atk'},'レンジャー':{標準:'hit'},
@@ -2493,7 +2493,7 @@ const HP_R6_EQUIPS = new Set([
 function hpKaigoVal(t, slotNum){
   // R5固定
   // 変造しない後に変造したスロットは小さい値（slot34）を使用
-  const isPostSkipSlot=hpSlots[slotNum-1]&&hpSlots[slotNum-1].committed&&hpSlots[slotNum-1].changed;
+  const isPostSkipSlot=!hpHenzoDone&&hpSlots[slotNum-1]&&hpSlots[slotNum-1].skippedCommit&&hpSlots[slotNum-1].changed;
   const initCount=(hpRarity==='blue'?2:3);
   const isLateHenzo=isPostSkipSlot&&(slotNum<=initCount);
   const tier=(slotNum<=3&&!isLateHenzo)?'slot12':'slot34';
@@ -2515,6 +2515,15 @@ function updateContentLabel(){
   if(lbl) lbl.textContent=HP_CONTENT_LABELS[getContent()]||getContent();
 }
 function getSecond(sn,mt){ return (HP_SECOND[sn]||{})[mt]||'spd'; }
+function getThirdKeys(job,build,sn){
+  const pos=getPos();
+  const posJobOvr=(HP_POS_JOB_OVERRIDE[pos]||{})[job];
+  if(posJobOvr) return posJobOvr;
+  const posOvr=(HP_POS_THIRD[pos]||{})[sn];
+  if(posOvr) return posOvr;
+  const jobBuildKey=job+'_'+build;
+  return HP_THIRD_BY_JOB_BUILD[jobBuildKey]||HP_THIRD_BY_BUILD[build]||HP_THIRD_BY_JOB[job]||[];
+}
 
 // State:
 // slots = [{kaigo, henzo, isCorrect, changed:false, committed:false, isRandom:false}]
@@ -2530,37 +2539,80 @@ function genSlots(){
   const mt=getMain();
   const wt=sn==='武器'?getWeaponType():null;
   const nat=sn==='武器'?(HP_WEAPON_TYPE_NAT[wt]||HP_NATURAL[sn]||[]):(HP_NATURAL[sn]||[]);
-  const second=getSecond(sn,mt);
+  // 職業・配置・ビルドを考慮したセカンド加護を取得
+  const job=document.getElementById('hp-job')?.value||'';
+  const build=document.getElementById('hp-build')?.value||'';
+  const thirdKeys=getThirdKeys(job,build,sn).filter(k=>k!==mt&&nat.includes(k));
+  // secondは thirdKeys先頭のみ。職業優先加護がnatにない場合はnull（全スロットハズレ候補）
+  const second=thirdKeys.length?thirdKeys[0]:null;
   const unwanted=(HP_UNWANTED[sn]||[]).filter(k=>k!==mt&&k!==second);
   const used=new Set([mt]); // mt予約済み
   const makeWrong=()=>{
-    const avail=unwanted.filter(x=>!used.has(x));
-    const allKeys=Object.keys(HP_KAIGO_NAMES).filter(x=>!used.has(x)&&x!==mt);
-    const k=avail.length?rand(avail):(allKeys.length?rand(allKeys):'def');
+    // nat から mt/second を除いた全加護をハズレ候補にする
+    const natAvail=nat.filter(x=>!used.has(x)&&x!==mt&&(second===null||x!==second));
+    const k=natAvail.length?rand(natAvail):'mdef';
     used.add(k);
-    return {kaigo:k||'def', origKaigo:k||'def', henzo:false, isCorrect:false, changed:false, committed:false, isRandom:false};
+    // 他の優先加護（thirdKeys[1]以降）もisCorrect=trueとしてマーク
+    const isPrio=thirdKeys.includes(k)||(hpRarity==='purple'&&k===mt+'_pct'&&nat.includes(k));
+    return {kaigo:k, origKaigo:k, henzo:false, isCorrect:isPrio, changed:false, committed:false, isRandom:false};
   };
   // 当たり = メイン実数（mt）
   const sMain={kaigo:mt, origKaigo:mt, henzo:!nat.includes(mt), isCorrect:true, changed:false, committed:false, isRandom:false};
   // 優先加護スロット（second）
-  const secondKaigo=getSecond(sn,mt);
-  const sCorrect={kaigo:secondKaigo, origKaigo:secondKaigo, henzo:false, isCorrect:true, changed:false, committed:false, isRandom:false};
+  // secondKaigo が mt と同じ場合はnat内の別の加護を選ぶ
+  const secondKaigo=second;
+  if(secondKaigo) used.add(secondKaigo);
+  const sCorrect=secondKaigo
+    ? {kaigo:secondKaigo, origKaigo:secondKaigo, henzo:false, isCorrect:true, changed:false, committed:false, isRandom:false}
+    : makeWrong();
+  // 紫装備ではmt%も優先加護（isCorrect=true）として扱う
+  const mtPctKey2=mt+'_pct';
+  const mtPctIsCorrect=hpRarity==='purple'&&nat.includes(mtPctKey2);
   // 第2優先加護（3枠目用）
   const jobG=document.getElementById('hp-job')?.value||'';
-  const thirdKaigoForPurple=(HP_THIRD_BY_JOB[jobG]||[]).find(k=>k!==mt&&k!==secondKaigo&&(HP_WEAPON_TYPE_NAT[getWeaponType()]||HP_NATURAL[sn]||[]).includes(k));
+  const buildG=document.getElementById('hp-build')?.value||'';
+  const thirdKeys2=getThirdKeys(jobG,buildG,sn).filter(k=>k!==mt&&k!==secondKaigo&&(HP_WEAPON_TYPE_NAT[getWeaponType()]||HP_NATURAL[sn]||[]).includes(k));
+  const thirdKaigoForPurple=thirdKeys2[0]||null;
+  // sCorrect2: 第2優先加護。なければsCorrectと被らないハズレ加護を使う
+  if(thirdKaigoForPurple) used.add(thirdKaigoForPurple);
   const sCorrect2=thirdKaigoForPurple
     ? {kaigo:thirdKaigoForPurple, origKaigo:thirdKaigoForPurple, henzo:false, isCorrect:true, changed:false, committed:false, isRandom:false}
-    : sCorrect;
+    : makeWrong(); // sCorrectと被らない別の加護
   // ハズレ
   const sWrong = makeWrong();
   const sWrong2 = makeWrong();
   const sWrong3 = makeWrong();
+
+  // mtがnatにない場合（体に攻撃力など）はメインが自然につかないので全ハズレ扱い
+  const mtInNat=nat.includes(mt);
 
   // パターン選択
   // 青: 25%メイン+優先 / 45%メイン+ハズレ / 15%ハズレ+ハズレ / 10%優先+優先 / 5%優先+ハズレ
   // 紫: 15%メイン+優先+優先 / 20%メイン+優先+ハズレ / 35%メイン+ハズレ+ハズレ / 15%全ハズレ / 10%優先+優先+ハズレ / 5%優先+ハズレ+ハズレ
   const rng = Math.random();
   let baseSlots;
+  if(!secondKaigo&&!mtInNat){
+    // 優先加護なし かつ メインも自然につかない → 全スロットハズレ
+    baseSlots = [sWrong, sWrong2];
+    if(hpRarity==='purple') baseSlots.push(sWrong3);
+    hpSlots = baseSlots;
+    hpDone=false; hpHenzoDone=false;
+    return;
+  }
+  // 優先加護なしでもメインが自然につく場合はメイン+ハズレパターンを使う
+  if(!mtInNat){
+    // メインが自然につかない部位 → 優先加護は出るがメインは出ない
+    // パターン選択（メインなし版）
+    const rngNoMt=Math.random();
+    if(hpRarity==='blue'){
+      baseSlots=rngNoMt<0.5?[sCorrect,sWrong]:[sWrong,sCorrect];
+    } else {
+      const sC2=sCorrect2&&sCorrect2!==sCorrect?sCorrect2:makeWrong();
+      baseSlots=rngNoMt<0.33?[sCorrect,sWrong,sWrong2]:rngNoMt<0.66?[sCorrect,sC2,sWrong]:[sWrong,sCorrect,sC2];
+    }
+    hpSlots=baseSlots; hpDone=false; hpHenzoDone=false;
+    return;
+  }
   if(hpRarity==='blue'){
     if(rng < 0.15){
       baseSlots = [sWrong, sWrong2]; // ハズレ+ハズレ
@@ -2706,7 +2758,13 @@ window.hpDoHenzo=function(){
     return;
   }
   hpHenzoDone=true;
-  hpSlots.forEach(s=>{ if(s) s.committed=true; });
+  hpSlots.forEach(s=>{
+    if(s){
+      s.committed=true;
+      // 変造するで確定した変更はpostSkip扱いにしない
+      if(s.changed) s.skippedCommit=false;
+    }
+  });
   addNextSlot();
   render();
 };
@@ -2738,6 +2796,7 @@ window.hpSkipHenzo=function(){
       s.changed=false; s.henzo=false;
     }
     s.committed=true;
+    if(!s.changed) s.skippedCommit=true; // 変造済みスロットにはskippedCommitをセットしない
   });
   // 変造済みでなかった場合のみリセット
   if(!wasHenzoDone) hpHenzoDone=false;
@@ -2761,8 +2820,12 @@ const HP_POS_THIRD = {
 };
 // 後衛僧侶は命中不要
 const HP_POS_JOB_OVERRIDE = {
+  前衛: {
+    // 前衛職業別オーバーライドなし（HP_THIRD_BY_JOBをそのまま使用）
+  },
   後衛: {
-    '僧侶': ['spd','res'],
+    '魔術師': ['spd'],           // 後衛魔術師: 命中・回避不要
+    '僧侶':   ['spd','res'],     // 後衛僧侶: 命中不要
   }
 };
 
@@ -2786,8 +2849,13 @@ function addNextSlot(){
   const sn=document.getElementById('hp-slot').value;
   const wt2=sn==='武器'?getWeaponType():null;
   const nat=sn==='武器'?(HP_WEAPON_TYPE_NAT[wt2]||HP_NATURAL[sn]||[]):(HP_NATURAL[sn]||[]);
-  const mt=getMain(), second=getSecond(sn,mt);
+  const mt=getMain();
   const job=document.getElementById('hp-job').value;
+  const build=document.getElementById('hp-build')?.value||'';
+  // 職業・配置・ビルドを考慮したsecond取得
+  const thirdKeysAN=getThirdKeys(job,build,sn).filter(k=>k!==mt&&nat.includes(k));
+  // % fallbackを避ける: nat内の実数加護を優先
+  const second=thirdKeysAN.length?thirdKeysAN[0]:null;
   const usedSet=new Set(hpSlots.flatMap(s=>[s.kaigo, s.userHenzo?s.userHenzo.kaigo:null].filter(Boolean)));
   const isLastSlot=hpSlots.length===maxSlots()-1;
 
@@ -2803,7 +2871,7 @@ function addNextSlot(){
       k=pctFallback.length?pctFallback[0]:nat.filter(x=>!usedSet.has(x))[0]||'spd';
     }
   } else {
-    // 3枠目: メイン実数→メイン%→優先実数→優先%の優先度
+    // 3枠目: 職業優先リストから選択（natに含まれるもの優先）
     const mtPct=mt+'_pct';
     const secondPct=second+'_pct';
     const slotExcl=HP_SLOT_EXCL[sn]||[];
@@ -2824,10 +2892,10 @@ function render(){
   const skipBtn=document.getElementById('hp-skip-btn');
 
   el.innerHTML=hpSlots.map((s,i)=>{
-    const col=s.henzo?'var(--ember)':'var(--green)';
+    const col=(!hpHenzoDone&&s.skippedCommit&&s.changed)?'var(--ember)':'var(--green)';
     if(!s||!s.kaigo) return '';
     const senrenBonus=s.senren?0:-4;
-    const isPostSkipHenzo=s.committed&&s.changed&&(hpRarity==='blue'?i<2:i<3);
+    const isPostSkipHenzo=!hpHenzoDone&&s.skippedCommit&&s.changed&&(hpRarity==='blue'?i<2:i<3);
     const val=hpKaigoVal(s.kaigo, i+1)+senrenBonus;
     const valStr=s.kaigo.endsWith('_pct')?'+'+val+'%':'+'+val;
     const valColor=isPostSkipHenzo?'var(--ember)':'var(--gold2)';
@@ -2835,14 +2903,14 @@ function render(){
     // isRandomは編集不可、他に変造済みがあれば編集不可（committedでもドロップダウン表示）
     // hpHenzoDone後はcommitted枠を全ロック、それ以外は変更済みがあれば他をロック
     const anySlotChanged=hpSlots.some(s2=>s2&&s2.changed);
-    const locked=s.isRandom||(hpHenzoDone&&s.committed)||(s.committed&&s.changed)||(anySlotChanged&&!s.changed);
+    const locked=s.isRandom||(hpHenzoDone&&s.committed)||(!hpHenzoDone&&s.skippedCommit&&s.changed)||(anySlotChanged&&!s.changed);
     const canEdit=!locked;
     const curVal=s.kaigo;
     const dropDown=canEdit
       ? `<select onchange="hpSlotChange(${i},this.value)" style="padding:3px 8px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:11px">
           ${all.map(k=>{
             const isN=nat.includes(k);
-            return `<option value="${k}" ${k===curVal?'selected':''} style="color:${isN?'var(--green)':'var(--ember)'}">${HP_KAIGO_NAMES[k]||k}</option>`;
+            return `<option value="${k}" ${k===curVal?'selected':''} style="color:${isN?'var(--green)':'var(--muted)'}">${HP_KAIGO_NAMES[k]||k}</option>`;
           }).join('')}
         </select>`
       : `<span style="color:${col};font-weight:600">${HP_KAIGO_NAMES[s.kaigo]||s.kaigo} <span style="color:${valColor};font-size:10px">${valStr}</span></span>`;
@@ -2868,308 +2936,258 @@ function render(){
   }
 }
 
+
 function showAdvice(){
   const sn=document.getElementById('hp-slot').value;
   const _wt=sn==='武器'?getWeaponType():null;
   const nat=sn==='武器'?(HP_WEAPON_TYPE_NAT[_wt]||HP_NATURAL[sn]||[]):(HP_NATURAL[sn]||[]);
-  const mt=getMain(), second=getSecond(sn,mt);
+  const jobSA=document.getElementById('hp-job')?.value||'';
+  const buildSA=document.getElementById('hp-build')?.value||'';
+  const mt=getMain();
+  const thirdKeysSA=getThirdKeys(jobSA,buildSA,sn).filter(k=>k!==mt&&nat.includes(k));
+  const second=thirdKeysSA.length?thirdKeysSA[0]:null;
   const adv=document.getElementById('hp-advice');
-  const lines=[];
-
-  // ハズレ×ハズレ判定（最初の2枠が両方isCorrect:falseだった場合）
-  const initSlotCount=hpRarity==='blue'?2:3;
-  const initSlots=hpSlots.filter(s=>s&&!s.isRandom).slice(0,initSlotCount);
-  // メインなし（全ハズレ or 優先+ハズレ etc）も同様に厳選し直し推奨
-  const hasMainSlot=initSlots.some(s=>s&&s.origKaigo===mt);
-  const isDoubleHazure=(initSlots.length>=initSlotCount&&initSlots.every(s=>!s.isCorrect))||!hasMainSlot;
-
-  let isPerfectHenzo=false;
-  const allInitCorrect3=hpSlots.slice(0,initSlotCount).every(s=>s&&s.isCorrect);
-  const isMainPrioPatternEarly=allInitCorrect3&&hpRarity==='blue'&&hpSlots.length>=3;
-  hpSlots.forEach((s,i)=>{
-    if(isMainPrioPatternEarly) return; // メイン+優先パターンは個別ヒント不要
-    if(s.committed&&s.changed&&!hpHenzoDone) return; // 変造しない後の変更は⚠️のみ
-    if(!s||s.isRandom) return;
-    if(isDoubleHazure) return; // ハズレ×ハズレの場合は個別ヒントなし
-    const origKaigo=s.origKaigo||s.kaigo;
-    const origLabel=HP_KAIGO_NAMES[origKaigo]||origKaigo;
-    const origIsMain=origKaigo===mt;
-    const origIsSecond=origKaigo===second;
-    const origIsUnwanted=!origIsMain&&!origIsSecond;
-    if(s.changed){
-      const changedToMain=s.kaigo===mt;
-      const changedToPct=s.kaigo.endsWith('_pct');
-      // 元が当たり（isCorrect=true）なのに変造した場合
-      const wasCorrect=s.isCorrect;
-      // ハズレが他にあるか
-      const hasOtherHazure=hpSlots.some((s2,j)=>j!==i&&s2&&!s2.isCorrect&&!s2.isRandom&&!s2.changed);
-      // メイン優先優先パターンの4枠目変造（②の正解）かどうか
-      const initCount4=hpRarity==='blue'?2:3;
-      const isOptional4th=i>=initCount4&&hpSlots.slice(0,initCount4).every(s2=>s2&&s2.isCorrect);
-      if(isOptional4th){
-        // メイン優先優先②の正解パターン：4枠目変造
-        const isRecommended=['crit','spd'].includes(s.kaigo);
-        const physJobsC=['戦士','騎士','盗賊','忍者','侍','レンジャー'];
-        const isPhysC=physJobsC.includes(document.getElementById('hp-job')?.value||'');
-        if(isRecommended){
-          lines.push(`${i+1}枠目: メインは1ヶ所ですが不要な加護が一切ない、バランスの取れた最高品質の装備が完成しました！`);
-        } else {
-          const recStr=isPhysC
-            ? '<strong>会心</strong>・<strong>行動速度</strong>'
-            : '<strong>行動速度</strong>';
-          lines.push(`${i+1}枠目: 4枠目の変造には${recStr}がおすすめです。行動速度・会心は鍛える前後で差異が出にくいため後回しにできます。`);
-        }
-      } else if(wasCorrect&&changedToMain){
-        if(hasOtherHazure){
-          // メイン枠を変造したが、ハズレ枠を変造すべきだった
-          const hazureSlots=hpSlots.filter((s2,j)=>j!==i&&s2&&!s2.isCorrect&&!s2.isRandom);
-          const hazureLabels=hazureSlots.map(s2=>HP_KAIGO_NAMES[s2.origKaigo||s2.kaigo]||s2.kaigo);
-          const hazureStr=hazureLabels.map(l=>`<strong>${l}</strong>`).join('・');
-          if(origIsMain){
-            const allOthersCorrect=!hasOtherHazure&&hpSlots.every((s2,j)=>j===i||!s2||s2.isCorrect||s2.isRandom);
-            if(allOthersCorrect&&hpRarity==='blue'&&hpSlots.length>=3){
-              // 青メイン+優先パターンで優先→メインに変造した場合
-              const sn4b=document.getElementById('hp-slot').value;
-              const job4b=document.getElementById('hp-job')?.value||'';
-              const slotExcl4b=HP_SLOT_EXCL[sn4b]||[];
-              const prioKeys4b=[mt,...(HP_THIRD_BY_JOB[job4b]||[]).filter(k=>k!==mt)].filter(k=>!slotExcl4b.includes(k)&&!k.endsWith('_pct'));
-              const colors4b=['var(--gold2)','var(--teal)','var(--green)'];
-              function su4b(k){return (HP_KAIGO_NAMES[k]||k).replace('（実数）','').replace('（%）','');}
-              const prioSpans4b=prioKeys4b.slice(0,3).map((k,ci)=>`<strong style="color:${colors4b[ci]}">${su4b(k)}</strong>`).join('・');
-              lines.push(`${i+1}枠目: 3枠目に${prioSpans4b}等の欲しい加護がついた場合はレベル20まで鍛えましょう。欲しい加護がつかなかった場合はレベル15で止めて良い装備が出来るまでの繋ぎの装備にしましょう。4枠目に${prioSpans4b}がつけば高品質の装備と言えるでしょう。`);
-            } else if(allOthersCorrect){
-              // メイン+優先+優先パターンでメインを変造した場合
-              const sn2=document.getElementById('hp-slot').value;
-              const slotExclA=HP_SLOT_EXCL[sn2]||[];
-              const job2=document.getElementById('hp-job').value;
-              const fourthPrioKeys=[...(HP_THIRD_BY_JOB[job2]||[])].filter(k=>!slotExclA.includes(k)&&!k.endsWith('_pct'));
-              const fourthColors=['var(--gold2)','var(--teal)'];
-              const fourthSpans=fourthPrioKeys.slice(0,2).map((k,ci)=>`<strong style="color:${fourthColors[ci]}">${(HP_KAIGO_NAMES[k]||k).replace('（実数）','').replace('（%）','')}</strong>`).join('・');
-              const prioSlots=hpSlots.filter((s2,j)=>j!==i&&s2&&s2.isCorrect&&!s2.isRandom);
-              const prioLabelA=prioSlots.length>0?(HP_KAIGO_NAMES[prioSlots[0].origKaigo||prioSlots[0].kaigo]||prioSlots[0].kaigo):'優先加護';
-              // 物理攻撃職のみ会心を4枠目推奨に含める
-              const physJobs2=['戦士','騎士','盗賊','忍者','侍','レンジャー'];
-              const isPhys2=physJobs2.includes(job2);
-              const fourthHenzo=isPhys2
-                ? '<strong>会心</strong>・<strong>行動速度</strong>'
-                : '<strong>行動速度</strong>';
-              lines.push(`${i+1}枠目: この装備には正解が2つあります。<br>①<strong>${prioLabelA}</strong>等の優先加護の枠を変造して<strong>${HP_KAIGO_NAMES[mt]}</strong>にする方法（メインが2ヶ所の最高品質）<br>②変造せずにレベル20まで鍛えて4枠目を開放し、4枠目に${fourthHenzo}を変造する方法（行動速度・会心は鍛える前後で差異が出にくいため後回しにできます）`);
-            } else {
-              lines.push(`${i+1}枠目: メイン加護の<strong>${origLabel}</strong>は変造しないほうがよかったです。<strong>${hazureStr}</strong>の枠を変造して<strong>${HP_KAIGO_NAMES[mt]}</strong>に変えるのがおすすめでした。`);
-            }
-          } else {
-            const hazureSlot=hazureSlots[0];
-            const hazureLabel=hazureSlot?(HP_KAIGO_NAMES[hazureSlot.origKaigo||hazureSlot.kaigo]||hazureSlot.kaigo):'不要な加護';
-            // 優先度高い加護枠を変造した場合
-            lines.push(`${i+1}枠目: <strong>${origLabel}</strong>の枠ではなく<strong>${hazureLabel}</strong>の枠を<strong>${HP_KAIGO_NAMES[mt]}</strong>に変造すれば最高品質の装備が作れました。現状は不要な加護が1ヶ所残っているためレベル20まで鍛えないようにしましょう。`);
-          }
-        } else if(!origIsMain){
-          // 優先→メインに変造（メイン+優先パターン）→3枠目に不要加護が残る
-          const sn4=document.getElementById('hp-slot').value;
-          const job4=document.getElementById('hp-job').value;
-          const slotExcl4=HP_SLOT_EXCL[sn4]||[];
-          const prioKeys4=[mt,...(HP_THIRD_BY_JOB[job4]||[]).filter(k=>k!==mt)].filter(k=>!slotExcl4.includes(k)&&!k.endsWith('_pct'));
-          const colors4=['var(--gold2)','var(--teal)','var(--green)'];
-          function su4(k){return (HP_KAIGO_NAMES[k]||k).replace('（実数）','').replace('（%）','');}
-          const prioSpans4=prioKeys4.slice(0,3).map((k,ci)=>`<strong style="color:${colors4[ci]}">${su4(k)}</strong>`).join('・');
-          lines.push(`${i+1}枠目: 3枠目に${prioSpans4}等の欲しい加護がついた場合はレベル20まで鍛えましょう。欲しい加護がつかなかった場合はレベル15で止めて良い装備が出来るまでの繋ぎの装備にしましょう。4枠目に${prioSpans4}がつけば高品質の装備と言えるでしょう。`);
-        } else {
-          lines.push(`${i+1}枠目: <strong>${origLabel}</strong>から<strong>${HP_KAIGO_NAMES[mt]}</strong>に変造！ ✅ 正解です！`);
-        }
-      } else if(!wasCorrect&&changedToMain){
-        // ハズレをメインに変造した場合
-        const initCount=hpRarity==='blue'?2:3;
-        const otherHazureRemain=hpSlots.slice(0,initCount).some((s2,j)=>j!==i&&s2&&!s2.isCorrect&&!s2.changed);
-        // 他に優先加護スロット（isCorrect=true、メイン以外）があるか → メイン優先ハズレパターン
-        const hasPrioRemain=hpSlots.slice(0,initCount).some((s2,j)=>j!==i&&s2&&s2.isCorrect&&s2.kaigo!==mt);
-        if(!otherHazureRemain&&hasPrioRemain){
-          isPerfectHenzo=true; // 最高品質フラグ
-          // メイン優先ハズレ → ハズレをメインに変造 → 3枠全て良品
-          const sn2=document.getElementById('hp-slot').value;
-          const slotExclH=HP_SLOT_EXCL[sn2]||[];
-          const job2=document.getElementById('hp-job').value;
-          const prioKeysH=[...(HP_THIRD_BY_JOB[job2]||[])].filter(k=>!slotExclH.includes(k)&&!k.endsWith('_pct'));
-          const prioColorsH=['var(--gold2)','var(--teal)','var(--green)'];
-          const prioSpansH=prioKeysH.slice(0,3).map((k,ci)=>`<strong style="color:${prioColorsH[ci]}">${(HP_KAIGO_NAMES[k]||k).replace('（実数）','').replace('（%）','')}</strong>`).join('・');
-          lines.push(`${i+1}枠目: 必要な加護が3ヶ所揃った最高品質の装備が完成しました！レベル20まで鍛えて4枠目の加護を開放しましょう。4枠目に${prioSpansH}等の優先度が高い加護がつけば神装備になります。`);
-        } else if(otherHazureRemain){
-          const sn4=document.getElementById('hp-slot').value;
-          const job4=document.getElementById('hp-job').value;
-          const slotExcl4=HP_SLOT_EXCL[sn4]||[];
-          const prioKeys4=[mt,...(HP_THIRD_BY_JOB[job4]||[]).filter(k=>k!==mt)].filter(k=>!slotExcl4.includes(k)&&!k.endsWith('_pct'));
-          const colors4=['var(--gold2)','var(--teal)','var(--green)'];
-          function su4(k){return (HP_KAIGO_NAMES[k]||k).replace('（実数）','').replace('（%）','');}
-          const prioSpans4=prioKeys4.slice(0,3).map((k,ci)=>`<strong style="color:${colors4[ci]}">${su4(k)}</strong>`).join('・');
-          lines.push(`${i+1}枠目: 3枠目に${prioSpans4}等の欲しい加護がついた場合はレベル20まで鍛えましょう。欲しい加護がつかなかった場合はレベル15で止めて良い装備が出来るまでの繋ぎの装備にしましょう。4枠目に${prioSpans4}がつけば高品質の装備と言えるでしょう。`);
-        }
-      } else if(wasCorrect&&!changedToMain){
-        const hazureSlot2=hpSlots.find((s2,j)=>j!==i&&s2&&!s2.isCorrect&&!s2.isRandom);
-        const hazureLabel2=hazureSlot2?(HP_KAIGO_NAMES[hazureSlot2.origKaigo||hazureSlot2.kaigo]||hazureSlot2.kaigo):'不要な加護';
-        const allOthersCorrect2=!hazureSlot2&&hpSlots.every((s2,j)=>j===i||!s2||s2.isCorrect||s2.isRandom);
-        if(origIsMain&&allOthersCorrect2){
-          // メイン優先優先パターンでメインを変造した場合
-          const sn3=document.getElementById('hp-slot').value;
-          const job3=document.getElementById('hp-job').value;
-          const slotExclB=HP_SLOT_EXCL[sn3]||[];
-          const physJobsB=['戦士','騎士','盗賊','忍者','侍','レンジャー'];
-          const isPhysB=physJobsB.includes(job3);
-          const fourthHenzoB=isPhysB
-            ? '<strong>会心</strong>・<strong>行動速度</strong>'
-            : '<strong>行動速度</strong>';
-          const prioSlotsB=hpSlots.filter((s2,j)=>j!==i&&s2&&s2.isCorrect&&!s2.isRandom);
-          const prioLabelB=prioSlotsB.length>0?(HP_KAIGO_NAMES[prioSlotsB[0].origKaigo||prioSlotsB[0].kaigo]||prioSlotsB[0].kaigo):'優先加護';
-          lines.push(`${i+1}枠目: この装備には正解が2つあります。<br>①<strong>${prioLabelB}</strong>等の優先加護の枠を変造して<strong>${HP_KAIGO_NAMES[mt]}</strong>にする方法（メインが2ヶ所の最高品質）<br>②変造せずにレベル20まで鍛えて4枠目を開放し、不要な加護が付いた時の保険として変造枠を温存しておく方法。4枠目に不要な加護が付いた際は${fourthHenzoB}に変造します（行動速度・会心は鍛える前後で差異が出にくいため後回しにできます）`);
-        } else if(!origIsMain&&hazureSlot2){
-          // 優先加護→ハズレに変造した場合（他にハズレあり）
-          lines.push(`${i+1}枠目: <strong>${origLabel}</strong>ではなく<strong>${hazureLabel2}</strong>の枠を<strong>${HP_KAIGO_NAMES[mt]}</strong>に変造すれば最高品質の装備が作れました。`);
-        } else if(!origIsMain&&!hazureSlot2){
-          // 優先加護→メイン以外に変造（メイン+優先パターン、ハズレなし）
-          lines.push(`${i+1}枠目: <strong>${origLabel}</strong>は不要な加護でした。変造するなら<strong>${HP_KAIGO_NAMES[mt]}</strong>を選ぶのが正解でした。`);
-        } else {
-          lines.push(`${i+1}枠目: <strong>${origLabel}</strong>は有用な加護でした。変造するなら<strong>${hazureLabel2}</strong>の枠を選び<strong>${HP_KAIGO_NAMES[mt]}</strong>に変造しましょう。`);
-        }
-      } else {
-        // ハズレをメイン以外に変造した場合
-        if(!wasCorrect&&!changedToMain&&!changedToPct){
-          // メイン優先ハズレパターンで、ハズレをメイン以外に変造した場合
-          const hasPrioSlotRemain=hpSlots.some((s2,j)=>j!==i&&s2&&s2.isCorrect&&!s2.isRandom);
-          if(hasPrioSlotRemain){
-            lines.push(`${i+1}枠目: <strong>${origLabel}</strong>ではなく<strong>${HP_KAIGO_NAMES[mt]}</strong>に変造すれば最高品質の装備が作れました。現状は不要な加護が1ヶ所残っているためレベル20まで鍛えないようにしましょう。`);
-          } else {
-            lines.push(`${i+1}枠目: <strong>${origLabel}</strong>は不要な加護でした。変造するなら<strong>${HP_KAIGO_NAMES[mt]}</strong>を選ぶのが正解でした。`);
-          }
-        } else {
-          lines.push(`${i+1}枠目: 変造では<strong>${HP_KAIGO_NAMES[mt]}</strong>を選ぶのが正解でした。`);
-        }
-      }
-    } else if(origIsUnwanted&&s.committed&&!hpHenzoDone&&i<initSlotCount&&!allInitCorrect3){
-      // メイン優先優先パターン(allInitCorrect3)ではヒントなし
-      lines.push(`${i+1}枠目: <strong>${origLabel}</strong>は不要な加護でした。変造で<strong>${HP_KAIGO_NAMES[mt]}</strong>に変えるのがおすすめでした。`);
-    }
-  });
   let html='';
-  if(lines.length>0){
-    html=`<div class="tip-box" style="border-left-color:var(--ember)"><strong>💡 変造のヒント：</strong><br>${lines.join('<br>')}</div>`;
-  }
-  if(isDoubleHazure){
-    function stripUnit(k){ return (HP_KAIGO_NAMES[k]||k).replace('（実数）','').replace('（%）',''); }
-    if(hpRarity==='blue'){
-      html+=`<div class="tip-box" style="border-left-color:var(--muted);margin-top:8px">⚠️ 1枠目・2枠目ともに<strong>${HP_KAIGO_NAMES[mt]}</strong>以外の加護でした。<br>変造で直しても1枠しか修正できないため、<strong>${HP_KAIGO_NAMES[mt]}</strong>が初めからついている装備を厳選し直すのがおすすめです。</div>`;
+
+  // ===== 共通ヘルパー =====
+  function stripU(k){ return (HP_KAIGO_NAMES[k]||k).replace('（実数）','').replace('（%）',''); }
+  function label(k){ return `<strong>${HP_KAIGO_NAMES[k]||k}</strong>`; }
+  function tip(color, msg){ return `<div class="tip-box" style="border-left-color:${color};margin-top:8px">${msg}</div>`; }
+
+  const initCount=hpRarity==='blue'?2:3;
+  const initSlots=hpSlots.filter(s=>s&&!s.isRandom).slice(0,initCount);
+
+  // 変造スロット（変造ボタンで確定したもの）
+  const changedSlot=initSlots.find(s=>s&&s.changed);
+  const origKaigo=changedSlot?(changedSlot.origKaigo||changedSlot.kaigo):null;
+  const newKaigo=changedSlot?changedSlot.kaigo:null;
+  const changedToMt=newKaigo===mt;
+  const changedToPrio=newKaigo&&thirdKeysSA.includes(newKaigo);
+  const origWasMt=origKaigo===mt;
+  const origWasPrio=origKaigo&&thirdKeysSA.includes(origKaigo);
+  const origWasHazure=origKaigo&&!origWasMt&&!origWasPrio;
+
+  // 変造していないスロット
+  const unchangedHazure=initSlots.filter(s=>s&&!s.changed&&!s.isCorrect);
+  const unchangedPrio=initSlots.filter(s=>s&&!s.changed&&s.isCorrect&&s.kaigo!==mt);
+  const unchangedMt=initSlots.filter(s=>s&&!s.changed&&s.kaigo===mt&&!s.changed);
+
+  // 全スロットがハズレか
+  const allHazure=initSlots.every(s=>!s.isCorrect);
+  const hasMainInInit=initSlots.some(s=>s.isCorrect&&s.kaigo===mt)||(changedSlot&&changedToMt);
+  const hasPrioInInit=initSlots.some(s=>s.isCorrect&&s.kaigo!==mt)||(changedSlot&&changedToPrio);
+
+  // 厳選し直し条件：全ハズレで変造で優先もメインも付けていない
+  const userFixedMt=changedSlot&&changedToMt;
+  const userFixedPrio=changedSlot&&changedToPrio;
+  const isAllHazureNoFix=allHazure&&!userFixedMt&&!userFixedPrio;
+
+  // 厳選し直しヒント
+  if(isAllHazureNoFix){
+    const prioLabel=thirdKeysSA.slice(0,2).map(k=>label(k)).join('・');
+    const mtLabel=label(mt);
+    const anyUserHenzed=initSlots.some(s=>s&&s.changed);
+    if(anyUserHenzed){
+      const changedLabel=label(newKaigo);
+      html+=tip('var(--muted)',`⚠️ ${changedLabel}に変造しましたが、優先度の高い加護は${prioLabel||mtLabel}です。`);
+    } else if(hpRarity==='blue'){
+      const advLabelDH=thirdKeysSA.filter(k=>nat.includes(k)&&!k.endsWith('_pct')).slice(0,2).map(k=>label(k)).join('・')||mtLabel;
+      html+=tip('var(--muted)',`⚠️ 1枠目・2枠目ともに${advLabelDH}以外の加護でした。変造で${mtLabel}は1ヶ所しか付けられないため、${advLabelDH}等必要な加護が初めからついている装備を厳選し直すのがおすすめです。`);
     } else {
-      const job=document.getElementById('hp-job').value;
-      const sn=document.getElementById('hp-slot').value;
-      const build2=document.getElementById('hp-build')?.value||'';
-      const slotExcl2=HP_SLOT_EXCL[sn]||[];
-      const natSn=(HP_WEAPON_TYPE_NAT[getWeaponType()]||HP_NATURAL[sn]||[]);
-      // %加護と除外スロット加護を除いた優先リスト
-      const prioKeys=[...(HP_THIRD_BY_BUILD[build2]||HP_THIRD_BY_JOB[job]||[])]
-        .filter(k=>natSn.includes(k)&&!slotExcl2.includes(k)&&!k.endsWith('_pct')&&!(HP_SLOT_EXCL[sn]||[]).includes(k));
-      const prioColors=['var(--gold2)','var(--teal)','var(--green)'];
-      const prioSpans=prioKeys.slice(0,3).map((k,i)=>`<strong style="color:${prioColors[i]}">${stripUnit(k)}</strong>`).join('・');
-      const mtLabel2=stripUnit(mt);
-      // メイン（%）
-      const mtPctKey=mt+'_pct';
-      const mtPctLabel=stripUnit(mtPctKey);
-      const hasMtPct=natSn.includes(mtPctKey);
-      const mtPctStr=hasMtPct?`・<strong>${mtPctLabel}</strong>`:'';
-      const mtRealLabel=HP_KAIGO_NAMES[mt]||mt;
-      const mtPctFullLabel=hasMtPct?(HP_KAIGO_NAMES[mtPctKey]||mtPctKey):'';
-      html+=`<div class="tip-box" style="border-left-color:var(--muted);margin-top:8px">⚠️ 1〜3枠目全て<strong>${mtRealLabel}</strong>以外の加護でした。<br>変造しても1枠しか修正できないため、<strong>${mtRealLabel}</strong>${hasMtPct?'と<strong>'+mtPctFullLabel+'</strong>':''}${prioSpans?'・'+prioSpans:''}等2枠に欲しい加護が初めからついている装備を厳選し直すのがおすすめです。</div>`;
+      const advLabelDH=thirdKeysSA.filter(k=>nat.includes(k)&&!k.endsWith('_pct')).slice(0,3).map(k=>label(k)).join('・')||mtLabel;
+      html+=tip('var(--muted)',`⚠️ 1〜3枠目全て${mtLabel}以外の加護でした。変造しても1枠しか修正できないため、${advLabelDH}等2枠に欲しい加護が初めからついている装備を厳選し直すのがおすすめです。`);
     }
+    if(adv){adv.style.display='block';adv.innerHTML=html;}
+    return;
   }
 
-  // ハズレ→当たりの正解変造後の助言（変造後に3枠目が表示された場合）
-  const correctHenzo=hpSlots.some(s=>s&&s.changed&&!s.isCorrect&&s.kaigo===mt);
-  if(!isDoubleHazure&&correctHenzo&&hpSlots.length>=3&&!isPerfectHenzo){
-    const slot3=hpSlots[2];
-    if(slot3){
-      const sn=document.getElementById('hp-slot').value;
-      const job=document.getElementById('hp-job').value;
-      function stripUnit(k){ return (HP_KAIGO_NAMES[k]||k).replace('（実数）','').replace('（%）',''); }
-      const goodKaigo=[mt,second,...(HP_THIRD_BY_JOB[job]||[])];
-      const isSlot3Good=goodKaigo.includes(slot3.kaigo);
-      const mtLabel=stripUnit(mt);
-      const secondLabel=stripUnit(second);
-      const priorityLabel=mtLabel!==secondLabel?`${mtLabel}や${secondLabel}`:`${mtLabel}`;
-      // 優先加護リストを色つきで表示（実数/%表記なし）
-      const slotExcl3=HP_SLOT_EXCL[sn]||[];
-      const prioKeys=[mt, ...( (HP_THIRD_BY_JOB[job]||[]).filter(k=>k!==mt&&!slotExcl3.includes(k)) )];
-      const colors=['var(--gold2)','var(--teal)','var(--green)','var(--ember)'];
-      const prioSpans=prioKeys.slice(0,4).map((k,ci)=>`<strong style="color:${colors[ci]}">${stripUnit(k)}</strong>`).join('・');
+  // 強化前変造警告
+  const postSkipChanged=!hpHenzoDone&&hpSlots.slice(0,initCount).some(s=>s&&s.skippedCommit&&s.changed);
 
-      if(isSlot3Good){
-        html+=`<div class="tip-box" style="border-left-color:var(--green);margin-top:8px">3枠目に${prioSpans}等の欲しい加護がついた場合はレベル20まで鍛えましょう。<br>欲しい加護がつかなかった場合はレベル15で止めて良い装備が出来るまでの繋ぎの装備にしましょう。<br>4枠目に${prioSpans}がつけば高品質の装備と言えるでしょう。</div>`;
-      } else {
-        html+=`<div class="tip-box" style="border-left-color:var(--muted);margin-top:8px">欲しい加護がつかなかったためレベル15で止めて、高品質の装備ができるまでの繋ぎの装備にしましょう。</div>`;
-      }
-    }
-  }
-  // メイン・優先パターンの処理（青・紫共通の初期2枠が全correct）
-  const noHenzoDone=!hpHenzoDone&&!hpSlots.some(s=>s&&s.changed);
-  const isMainPrioPattern=isMainPrioPatternEarly;
-
-  if(isMainPrioPattern){
-    const slot3mp=hpSlots[2];
-    const physJobsMP=['戦士','騎士','盗賊','忍者','侍','レンジャー'];
-    const isPhysMP=physJobsMP.includes(document.getElementById('hp-job')?.value||'');
-    const recKeys=['crit','spd'];
-    const snMP=document.getElementById('hp-slot').value;
-    const jobMP=document.getElementById('hp-job')?.value||'';
-    const slotExclMP=HP_SLOT_EXCL[snMP]||[];
-    const prioKeysMP=[mt,...(HP_THIRD_BY_JOB[jobMP]||[]).filter(k=>k!==mt)].filter(k=>!slotExclMP.includes(k)&&!k.endsWith('_pct'));
-    const colorsMP=['var(--gold2)','var(--teal)','var(--green)'];
-    function suMP(k){return (HP_KAIGO_NAMES[k]||k).replace('（実数）','').replace('（%）','');}
-    const prioSpansMP=prioKeysMP.slice(0,3).map((k,ci)=>`<strong style="color:${colorsMP[ci]}">${suMP(k)}</strong>`).join('・');
-    const recStrMP=isPhysMP?'<strong>会心</strong>・<strong>行動速度</strong>':'<strong>行動速度</strong>';
-
-    if(slot3mp&&slot3mp.changed){
-      const isRecHenzo=recKeys.includes(slot3mp.kaigo);
-      if(isRecHenzo){
-        // 3枠目を会心/行動速度に変造
-        html+=`<div class="tip-box" style="border-left-color:var(--teal);margin-top:8px">レベル15でストップを推奨します。余裕があれば4枠目開放を目指し、${prioSpansMP}が付けば高品質の装備と言えるでしょう。</div>`;
-      } else {
-        // 3枠目をそれ以外に変造
-        html+=`<div class="tip-box" style="border-left-color:var(--muted);margin-top:8px">3枠目に必要な加護が揃い不要な加護はありませんが、変造した加護はレベルアップボーナスが付かないため数値が低くなります。レベル15でのストップを推奨します。</div>`;
-      }
-    } else if(noHenzoDone){
-      // 3枠目も変造なし → 紫4枠目と同じ文章
-      const recStr4MP=isPhysMP?'<strong>会心</strong>・<strong>行動速度</strong>':'<strong>行動速度</strong>';
-      html+=`<div class="tip-box" style="border-left-color:var(--green);margin-top:8px">4枠目に必要な加護が付いた場合は最高品質の装備です。<br>4枠目に不要な加護が付いた場合は${recStr4MP}に変造することをおすすめします。</div>`;
-    }
-    // 1-2枠目の変造チェック（レベルアップ前に変造するよう助言）
-    const initHenzoedSlots=hpSlots.slice(0,2).filter(s=>s&&s.changed);
-    if(initHenzoedSlots.length>0){
-      html+=`<div class="tip-box" style="border-left-color:var(--ember);margin-top:8px">⚠️ 変造はレベルアップ前（強化前）に行うのが基本です。レベルアップボーナスが付いてから変造するのはもったいないため、次回は強化前に変造するようにしましょう。</div>`;
-    }
-  }
-  // 紫：メイン優先優先パターンで1〜3枠目を変造した場合も同じ注意
-  if(allInitCorrect3&&hpRarity==='purple'&&hpSlots.length>initSlotCount){
-    const initHenzoedPurple=hpSlots.slice(0,initSlotCount).filter(s=>s&&s.changed);
-    if(initHenzoedPurple.length>0){
-      html+=`<div class="tip-box" style="border-left-color:var(--ember);margin-top:8px">⚠️ 変造はレベルアップ前（強化前）に行うのが基本です。レベルアップボーナスが付いてから変造するのはもったいないため、次回は強化前に変造するようにしましょう。</div>`;
-    }
+  if(hpRarity==='blue'){
+    html=showAdviceBlue(initSlots,changedSlot,mt,second,thirdKeysSA,nat,origKaigo,newKaigo,changedToMt,changedToPrio,origWasMt,origWasPrio,origWasHazure,unchangedHazure,unchangedPrio,label,tip,stripU);
+  } else {
+    html=showAdvicePurple(initSlots,changedSlot,mt,second,thirdKeysSA,nat,origKaigo,newKaigo,changedToMt,changedToPrio,origWasMt,origWasPrio,origWasHazure,unchangedHazure,unchangedPrio,label,tip,stripU);
   }
 
-  // メイン優先優先パターンで変造なしの場合：4枠目開放の案内（紫）
-  if(allInitCorrect3&&noHenzoDone&&hpSlots.length>initSlotCount&&!isMainPrioPattern){
-    const physJobs4=['戦士','騎士','盗賊','忍者','侍','レンジャー'];
-    const isPhys4=physJobs4.includes(document.getElementById('hp-job')?.value||'');
-    const recStr4=isPhys4
-      ? '<strong>会心</strong>・<strong>行動速度</strong>'
-      : '<strong>行動速度</strong>';
-    html+=`<div class="tip-box" style="border-left-color:var(--green);margin-top:8px">4枠目に必要な加護が付いた場合は最高品質の装備です。<br>4枠目に不要な加護が付いた場合は${recStr4}に変造することをおすすめします。</div>`;
-  }
-
-  // 全パターン共通：変造しない後にスロットを変造した場合の注意
-  // committed=trueかつchanged=trueのスロットがある = 変造しない後に変造した
-  const postSkipChanged=hpSlots.slice(0,initSlotCount).some(s=>s&&s.committed&&s.changed);
-  if(postSkipChanged) html=''; // 強化後変造の場合は他のヒントをクリア
   if(postSkipChanged){
-    html+=`<div class="tip-box" style="border-left-color:var(--ember);margin-top:8px">⚠️ 変造はレベルアップ前（強化前）に行うのが基本です。レベルアップボーナスが付いてから変造するのはもったいないため、次回は強化前に変造するようにしましょう。</div>`;
+    html='';
+    html+=tip('var(--ember)','⚠️ 変造はレベルアップ前（強化前）に行うのが基本です。レベルアップボーナスが付いてから変造するのはもったいないため、次回は強化前に変造するようにしましょう。');
   }
 
-  if(adv){ adv.style.display='block'; adv.innerHTML=html; }
+  if(adv){adv.style.display='block';adv.innerHTML=html;}
 }
+
+// ===== 青装備ヒント =====
+function showAdviceBlue(initSlots,changedSlot,mt,second,thirdKeys,nat,origKaigo,newKaigo,changedToMt,changedToPrio,origWasMt,origWasPrio,origWasHazure,unchangedHazure,unchangedPrio,label,tip,stripU){
+  let html='';
+  const sn=document.getElementById('hp-slot').value;
+  const job=document.getElementById('hp-job')?.value||'';
+  const build=document.getElementById('hp-build')?.value||'';
+
+  // 優先加護リスト（アドバイス用、nat不問）
+  const slotExcl=HP_SLOT_EXCL[sn]||[];
+  const prioKeys=[...(second?[second]:[]),...getThirdKeys(job,build,sn).filter(k=>k!==mt&&k!==second)].filter(k=>!slotExcl.includes(k)&&!k.endsWith('_pct'));
+  const colors=['var(--gold2)','var(--teal)','var(--green)'];
+  const prioSpans=prioKeys.slice(0,3).map((k,ci)=>`<strong style="color:${colors[ci]}">${stripU(k)}</strong>`).join('・');
+
+  if(!changedSlot){
+    // 変造なし
+    const slot1=initSlots[0], slot2=initSlots[1];
+    const allCorrect=initSlots.every(s=>s&&s.isCorrect);
+    if(allCorrect && hpSlots.length>=3){
+      // メイン+優先 or 優先+優先: isMainPrioPatternで処理（ここには来ないはず）
+    }
+    return html;
+  }
+
+  const hazureLabels=unchangedHazure.map(s=>label(s.origKaigo||s.kaigo)).join('・');
+
+  if(changedToMt){
+    if(origWasHazure){
+      // ハズレ→メインに変造
+      if(unchangedHazure.length>0){
+        // 別のハズレが残っている
+        html+=tip('var(--gold)',`${label(mt)}がつきましたが、${hazureLabels}が残っています。変造は1回のみのためレベル15で止めて繋ぎの装備として使いましょう。`);
+      } else if(unchangedPrio.length>0){
+        // メイン+優先の最高品質パターン
+        const slot3=hpSlots[2];
+        if(slot3){
+          html+=tip('var(--gold)',`3枠目に欲しい加護（${prioSpans}等）が付いた場合はレベル20まで鍛えて4枠目を開放し、更に必要な加護を狙いましょう。<br>不要な加護が付いた場合はレベル15で止めて、高品質の装備ができるまでの繋ぎの装備にしましょう。`);
+        } else {
+          html+=tip('var(--green)','3枠目に欲しい加護が付いた場合はレベル20まで鍛えて4枠目を開放し、更に必要な加護を狙いましょう。');
+        }
+      } else {
+        // メイン+ハズレ、ハズレをメインに変造 → 3枠目アドバイス
+        const slot3=hpSlots[2];
+        if(slot3){
+          html+=tip('var(--gold)',`3枠目に欲しい加護（${prioSpans}等）が付いた場合はレベル20まで鍛えて4枠目を開放し、更に必要な加護を狙いましょう。<br>不要な加護が付いた場合はレベル15で止めて、高品質の装備ができるまでの繋ぎの装備にしましょう。`);
+        }
+      }
+    } else if(origWasPrio){
+      // 優先→メインに変造
+      if(unchangedHazure.length>0){
+        html+=tip('var(--amber)',`${label(origKaigo)}は有用な加護でした。変造するなら${hazureLabels}の枠を選び${label(mt)}に変造しましょう。`);
+      } else {
+        // ハズレなし：優先→メインは正解（3枠目アドバイス）
+        const slot3=hpSlots[2];
+        if(slot3){
+          html+=tip('var(--gold)',`3枠目に欲しい加護（${prioSpans}等）が付いた場合はレベル20まで鍛えて4枠目を開放し、更に必要な加護を狙いましょう。<br>不要な加護が付いた場合はレベル15で止めて、高品質の装備ができるまでの繋ぎの装備にしましょう。`);
+        }
+      }
+    } else if(origWasMt){
+      // メイン→メインに変造（変わらない場合）
+    }
+  } else if(changedToPrio){
+    // ハズレ→優先に変造
+    if(unchangedHazure.length>0){
+      html+=tip('var(--gold)',`${label(origKaigo)}から${label(newKaigo)}に変造しました。${hazureLabels}が残っていますが変造は1回のみのため繋ぎの装備として使いましょう。`);
+    } else {
+      html+=tip('var(--green)','不要な加護のない良い装備ができています。');
+    }
+  } else {
+    // ハズレ→ハズレに変造、または優先/メインをハズレに変造
+    if(origWasMt){
+      // メイン→ハズレに変造
+      html+=tip('var(--amber)',`${label(origKaigo)}（${label(mt)}）は変造しないほうがよかったです。${hazureLabels}の枠を変造して${label(mt)}に変えるのがおすすめでした。`);
+    } else if(origWasPrio){
+      // 優先→ハズレに変造
+      html+=tip('var(--amber)',`${label(origKaigo)}は有用な加護でした。変造するなら${hazureLabels}の枠を選び${label(mt)}に変造しましょう。`);
+    } else {
+      // ハズレ→ハズレに変造
+      const prioLabel=second?label(second):label(mt);
+      html+=tip('var(--amber)',`${label(origKaigo)}は不要な加護でした。変造するなら${label(mt)}を選ぶのが正解でした。`);
+    }
+  }
+
+  // 変造しなかった不要スロットへの指摘
+  if(changedSlot&&unchangedHazure.length>0&&!changedToMt&&!changedToPrio){
+    // already handled above
+  }
+
+  // 精錬後の4枠目アドバイス（isPerfectHenzoに相当する場合）
+  if(hpSlots.length>=4&&changedToMt&&unchangedPrio.length>0&&unchangedHazure.length===0){
+    const slot4=hpSlots[3];
+    if(slot4){
+      html+=tip('var(--green)',`4枠目に欲しい加護（${prioSpans}等）が付いた場合は高品質の装備です。不要な加護が付いた場合はレベル15で止めて繋ぎの装備にしましょう。`);
+    }
+  }
+
+  return html;
+}
+
+// ===== 紫装備ヒント =====
+function showAdvicePurple(initSlots,changedSlot,mt,second,thirdKeys,nat,origKaigo,newKaigo,changedToMt,changedToPrio,origWasMt,origWasPrio,origWasHazure,unchangedHazure,unchangedPrio,label,tip,stripU){
+  let html='';
+  const sn=document.getElementById('hp-slot').value;
+  const job=document.getElementById('hp-job')?.value||'';
+  const build=document.getElementById('hp-build')?.value||'';
+  const slotExcl=HP_SLOT_EXCL[sn]||[];
+  const prioKeys=[...(second?[second]:[]),...getThirdKeys(job,build,sn).filter(k=>k!==mt&&k!==second)].filter(k=>!slotExcl.includes(k)&&!k.endsWith('_pct'));
+  const colors=['var(--gold2)','var(--teal)','var(--green)'];
+  const prioSpans=prioKeys.slice(0,3).map((k,ci)=>`<strong style="color:${colors[ci]}">${stripU(k)}</strong>`).join('・');
+  const mtPct=mt+'_pct';
+  const hasMtPctInInit=initSlots.some(s=>s&&s.kaigo===mtPct&&nat.includes(mtPct));
+
+  const hazureLabels=unchangedHazure.map(s=>label(s.origKaigo||s.kaigo)).join('・');
+
+  if(!changedSlot){
+    return html;
+  }
+
+  if(changedToMt){
+    if(origWasHazure){
+      // ハズレ→メインに変造
+      if(unchangedHazure.length>0){
+        html+=tip('var(--gold)',`${label(mt)}がつきましたが、${hazureLabels}が残っています。変造は1回のみのためレベル15で止めて繋ぎの装備として使いましょう。`);
+      } else {
+        // ハズレなし → 神装備候補
+        // 4枠目表示前
+        if(hpSlots.length<4){
+          html+=tip('var(--green)','必要な加護が3ヶ所揃った最高品質の装備が完成しました！レベル20まで鍛えて4枠目の加護を開放しましょう。');
+        } else {
+          html+=tip('var(--green)','4枠目に必要な加護が付いた場合は神装備です。');
+        }
+      }
+    } else if(origWasPrio){
+      if(unchangedHazure.length>0){
+        html+=tip('var(--amber)',`${label(origKaigo)}は有用な加護でした。変造するなら${hazureLabels}の枠を選び${label(mt)}に変造しましょう。`);
+      } else {
+        if(hpSlots.length<4){
+          html+=tip('var(--green)','必要な加護が3ヶ所揃った最高品質の装備が完成しました！レベル20まで鍛えて4枠目の加護を開放しましょう。');
+        } else {
+          html+=tip('var(--green)','4枠目に必要な加護が付いた場合は神装備です。');
+        }
+      }
+    } else if(origWasMt){
+      // メイン→メインは変化なし
+    }
+  } else if(changedToPrio){
+    if(unchangedHazure.length>0){
+      html+=tip('var(--gold)',`${label(origKaigo)}から${label(newKaigo)}に変造しました。${hazureLabels}が残っていますが変造は1回のみのため繋ぎの装備として使いましょう。`);
+    } else {
+      html+=tip('var(--green)','不要な加護のない良い装備ができています。');
+    }
+  } else {
+    // ハズレ→ハズレ、メイン→ハズレ、優先→ハズレ
+    if(origWasMt){
+      // メイン+優先+優先パターンでメインを変造した場合
+      const physJobs=['戦士','騎士','盗賊','忍者','侍','レンジャー'];
+      const isPhys=physJobs.includes(job);
+      const fourthHenzo=isPhys?`${label('crit')}・${label('spd')}`:`${label('spd')}`;
+      const prioSlots=initSlots.filter(s=>s&&s.isCorrect&&!s.changed&&s.kaigo!==mt);
+      const prioLabel=prioSlots.length>0?label(prioSlots[0].kaigo):'優先加護';
+      html+=tip('var(--amber)',`この装備には正解が2つあります。<br>①${prioLabel}等の優先加護の枠を変造して${label(mt)}にする方法（${label(mt)}が2ヶ所の最高品質）<br>②変造せずにレベル20まで鍛えて4枠目を開放し、4枠目に${fourthHenzo}を変造する方法`);
+    } else if(origWasPrio){
+      html+=tip('var(--amber)',`${label(origKaigo)}は有用な加護でした。変造するなら${hazureLabels}の枠を選び${label(mt)}に変造しましょう。`);
+    } else {
+      html+=tip('var(--amber)',`${label(origKaigo)}は不要な加護でした。変造するなら${label(mt)}を選ぶのが正解でした。`);
+    }
+  }
+
+  return html;
+}
+
 
 window.hpReroll=function(){
   // 厳選し直す: スロットをリセットして再生成
